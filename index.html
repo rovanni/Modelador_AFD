@@ -486,7 +486,9 @@
             const link = document.createElement('a');
             link.download = `automato-afd.json`;
             link.href = url;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
 
@@ -1703,9 +1705,15 @@
                         const x = fromNode.x;
                         const y = fromNode.y - nodeRadius;
                         tempCtx.beginPath();
-                        tempCtx.arc(x, y - 10, 16, Math.PI * 0.1, Math.PI * 0.9, true);
+                        tempCtx.arc(x, y - 12, 17, Math.PI * 0.1, Math.PI * 0.9, true);
                         tempCtx.stroke();
-                        drawArrowHead(tempCtx, x + 16 * Math.cos(Math.PI * 0.1), y - 10 - 16 * Math.sin(Math.PI * 0.1), Math.PI * 0.45);
+                        
+                        // Desenha a ponta da seta do laço centralizada perfeitamente no PNG
+                        const arrowAngle = Math.PI * 0.1;
+                        const arrowX = x + 15 * Math.cos(arrowAngle);
+                        const arrowY = y - 10 + 15 * Math.sin(arrowAngle);
+                        drawArrowHead(tempCtx, arrowX, arrowY, Math.PI * 0.62);
+
                         tempCtx.font = "bold 12px 'Fira Code', monospace";
                         tempCtx.textAlign = 'center';
                         tempCtx.fillText(label, x, y - 32);
@@ -1807,7 +1815,9 @@
             const link = document.createElement('a');
             link.download = `afd-${theme}-export.png`;
             link.href = tempCanvas.toDataURL('image/png');
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
