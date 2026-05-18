@@ -22,6 +22,12 @@
         canvas {
             touch-action: none;
         }
+        /* WCAG Acessibilidade: Indicador de foco visível nítido e elegante para navegação via teclado */
+        :focus-visible {
+            outline: 3px solid #06b6d4 !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 5px rgba(6, 182, 212, 0.4) !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200">
@@ -808,9 +814,9 @@
             const x = node.x;
             const y = node.y - nodeRadius;
 
-            // Cores do tema adaptativo
-            const lineStroke = isActive ? '#22d3ee' : (dark ? '#475569' : '#94a3b8');
-            const textFill = isActive ? '#22d3ee' : (dark ? '#94a3b8' : '#475569');
+            // Cores do tema adaptativo com alto contraste (WCAG AA/AAA)
+            const lineStroke = isActive ? (dark ? '#22d3ee' : '#0891b2') : '#64748b';
+            const textFill = isActive ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#cbd5e1' : '#334155');
 
             c.strokeStyle = lineStroke;
             c.lineWidth = isActive ? 3 : 1.5;
@@ -846,8 +852,9 @@
             const px = -uy;
             const py = ux;
 
-            const lineStroke = isActive ? '#22d3ee' : (dark ? '#475569' : '#94a3b8');
-            const textFill = isActive ? '#22d3ee' : (dark ? '#94a3b8' : '#475569');
+            // Cores com alto contraste (WCAG AA/AAA)
+            const lineStroke = isActive ? (dark ? '#22d3ee' : '#0891b2') : '#64748b';
+            const textFill = isActive ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#cbd5e1' : '#334155');
 
             c.strokeStyle = lineStroke;
             c.lineWidth = isActive ? 3 : 1.5;
@@ -919,15 +926,15 @@
                 const isInitial = (node.id === initialStateId);
                 const isFinal = acceptingStateIds.includes(node.id);
 
-                // Definir cor e brilho baseado no estado ativo
-                let strokeStyle = dark ? '#475569' : '#94a3b8';
+                // Definir cor e brilho baseado no estado ativo com conformidade WCAG AA/AAA
+                let strokeStyle = dark ? '#64748b' : '#64748b';
                 let glowColor = 'transparent';
 
                 if (isCurrent) {
-                    strokeStyle = '#22d3ee';
-                    glowColor = 'rgba(34, 211, 238, 0.4)';
+                    strokeStyle = dark ? '#22d3ee' : '#0891b2';
+                    glowColor = dark ? 'rgba(34, 211, 238, 0.25)' : 'rgba(8, 145, 178, 0.15)';
                 } else if (isFinal) {
-                    strokeStyle = '#10b981';
+                    strokeStyle = dark ? '#34d399' : '#047857';
                 }
 
                 // Desenhar anel de brilho
@@ -973,8 +980,8 @@
                     drawArrowHead(c, endX, node.y, 0);
                 }
 
-                // Rótulo do estado
-                c.fillStyle = isCurrent ? '#22d3ee' : (dark ? '#f1f5f9' : '#0f172a');
+                // Rótulo do estado (com alto contraste WCAG)
+                c.fillStyle = isCurrent ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#f1f5f9' : '#0f172a');
                 c.font = "bold 13px 'Fira Code', monospace";
                 c.textAlign = 'center';
                 c.fillText(node.id, node.x, node.y + 4);
