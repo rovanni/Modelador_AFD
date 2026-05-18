@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelador de AFD Interativo</title>
+    <!-- Tailwind CSS com suporte a classe dark -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200">
+
+    <!-- Cabeçalho Principal -->
+    <header class="border-b border-slate-200 dark:border-slate-900 bg-white/80 dark:bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 p-4 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-cyan-500/10 p-2 rounded-xl border border-cyan-500/30">
+                    <svg class="w-6 h-6 text-cyan-500 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-wider text-cyan-600 dark:text-cyan-400 code-font uppercase">Modelador de AFD Interativo</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Simulador e Editor de Autômatos Finitos Determinísticos</p>
+                </div>
+            </div>
+
+            <!-- Controles Auxiliares e Tema -->
+            <div class="flex items-center gap-3 flex-wrap justify-center">
+                <!-- Exemplos Rápidos com flex-wrap e impedimento de encolhimento de texto -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-200/60 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-300/50 dark:border-slate-800 transition-colors duration-200">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 px-1.5 font-semibold shrink-0 whitespace-nowrap">Exemplos:</span>
+                    <button onclick="loadExample('ends1')" class="text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-lg transition shadow-sm dark:shadow-none shrink-0 border border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-medium">Termina em 1</button>
+                    <button onclick="loadExample('even0')" class="text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-lg transition shadow-sm dark:shadow-none shrink-0 border border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-medium">Paridade de 0s</button>
+                    <button onclick="loadExample('start1')" class="text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-lg transition shadow-sm dark:shadow-none shrink-0 border border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-medium">Começa com 1</button>
+                </div>
+
+                <!-- Arquivo (JSON Import/Export) -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-200/60 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-300/50 dark:border-slate-800 transition-colors duration-200">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 px-1.5 font-semibold shrink-0 whitespace-nowrap">Projeto:</span>
+                    <button onclick="exportToJSON()" class="text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-lg transition shadow-sm dark:shadow-none shrink-0 border border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-medium flex items-center gap-1" title="Exportar autômato como JSON">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Exportar
+                    </button>
+                    <button onclick="document.getElementById('import-json-input').click()" class="text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-cyan-400 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-lg transition shadow-sm dark:shadow-none shrink-0 border border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-medium flex items-center gap-1" title="Importar autômato de um JSON">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        Importar
+                    </button>
+                    <input type="file" id="import-json-input" accept=".json" onchange="importFromJSON(event)" class="hidden">
+                </div>
+
+                <!-- Botão de Alternância de Tema -->
+                <button onclick="toggleTheme()" id="theme-toggle-btn" class="p-2.5 rounded-xl bg-slate-200/60 dark:bg-slate-900 hover:bg-slate-300/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-slate-800 transition duration-200" title="Alternar Tema">
+                    <!-- Ícone Sol -->
+                    <svg id="theme-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728A9 9 0 115.636 5.636m12.728 12.728L12 12"></path>
+                    </svg>
+                    <!-- Ícone Lua -->
+                    <svg id="theme-moon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Área de Trabalho de Duas Colunas -->
+    <main class="max-w-7xl w-full mx-auto p-4 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch my-2">
+        
+        <!-- Coluna Esquerda: Definição Matemática do AFD (Tabela & Alfabeto) -->
+        <section class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- Painel do Alfabeto -->
+            <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl shadow-sm dark:shadow-none transition-colors duration-200">
+                <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-3 code-font">1. Alfabeto do Sistema (Σ)</h2>
+                <div class="flex gap-2">
+                    <input type="text" id="alphabet-input" value="0, 1" onchange="updateAlphabet()" 
+                           class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-2.5 text-sm outline-none text-slate-800 dark:text-slate-100 flex-grow code-font font-bold" 
+                           placeholder="Ex: 0, 1 ou a, b">
+                    <button onclick="updateAlphabet()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs px-4 py-2.5 rounded-xl transition uppercase font-bold tracking-wider text-slate-700 dark:text-slate-300">
+                        Aplicar
+                    </button>
+                </div>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Separe os símbolos por vírgula. O AFD recalculará as transições dinamicamente.</p>
+            </div>
+
+            <!-- Tabela de Transições e Estados -->
+            <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl flex-grow flex flex-col justify-between shadow-sm dark:shadow-none transition-colors duration-200">
+                <div>
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-900">
+                        <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider code-font">2. Tabela de Transição (δ)</h2>
+                        <button onclick="addNewState()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
+                            + Estado
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto pr-1">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-900">
+                                    <th class="py-2">Estado</th>
+                                    <th class="py-2 text-center">Inicial</th>
+                                    <th class="py-2 text-center">Final</th>
+                                    <th class="py-2 pl-3">Transições por Símbolo</th>
+                                    <th class="py-2 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="state-table-body" class="divide-y divide-slate-100 dark:divide-slate-900/40">
+                                <!-- Gerado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center text-xs text-slate-400 dark:text-slate-500">
+                    <span>Total de Estados: <strong class="text-slate-600 dark:text-slate-300" id="state-count">0</strong></span>
+                    <button onclick="clearAutomaton()" class="text-rose-500 hover:text-rose-400 transition">Reiniciar Do Zero</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Coluna Direita: Renderizador de Grafo e Simulador -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Painel do Canvas de Desenho -->
+            <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 rounded-2xl flex flex-col overflow-hidden flex-grow min-h-[400px] relative shadow-sm dark:shadow-none transition-colors duration-200">
+                
+                <!-- Barra de Ferramentas do Canvas -->
+                <div class="p-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-900 flex flex-wrap items-center justify-between gap-2 z-10 transition-colors duration-200">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider code-font font-bold">Grafo Interativo</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <!-- Botão de Modo de Desenho -->
+                        <button id="btn-draw-mode" onclick="toggleDrawMode()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition border border-slate-300/40 dark:border-slate-700 flex items-center gap-1.5" title="Alternar entre mover nós ou desenhar transições (ou use Shift+Arrastar)">
+                            <span class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500" id="draw-mode-indicator"></span>
+                            <span>Mover Nós</span>
+                        </button>
+                        <button onclick="autoLayoutCircle()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition" title="Reposiciona todos os nós em círculo">
+                            Organizar Nós
+                        </button>
+                        <div class="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">Exportar:</span>
+                        <button onclick="exportToPNG('dark')" class="bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold">
+                            PNG Escuro
+                        </button>
+                        <button onclick="exportToPNG('light')" class="bg-slate-100 hover:bg-slate-200 text-slate-950 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold shadow-sm border border-slate-200 dark:border-none">
+                            PNG Claro
+                        </button>
+                        <button onclick="exportToPNG('transparent')" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition">
+                            Transpar.
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Elemento Canvas -->
+                <div class="relative w-full flex-grow bg-slate-100/50 dark:bg-slate-950/80 transition-colors duration-200" id="canvas-container">
+                    <canvas id="automaton-canvas" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+                </div>
+                
+                <!-- Dica para o Usuário -->
+                <div class="p-2 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 text-[10px] text-center text-slate-400 dark:text-slate-500 transition-colors duration-200">
+                    💡 <strong>Atalhos do Grafo:</strong> Clique duplo no vazio para criar estado. Clique duplo no estado para alternar aceitação. Botão direito no estado abre opções. Arraste com Shift (ou mude o Modo) para ligar transições.
+                </div>
+            </div>
+
+            <!-- Simulador e Validador de Strings -->
+            <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl shadow-sm dark:shadow-none transition-colors duration-200">
+                <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-3 code-font">3. Testador de Cadeias (Simulação)</h2>
+                
+                <!-- Abas do Simulador -->
+                <div class="flex border-b border-slate-200 dark:border-slate-800/80 mb-4">
+                    <button onclick="switchSimTab('single')" id="tab-sim-single" class="px-4 py-2 text-xs font-bold border-b-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 transition-all uppercase tracking-wider">
+                        Única Cadeia
+                    </button>
+                    <button onclick="switchSimTab('batch')" id="tab-sim-batch" class="px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-all uppercase tracking-wider">
+                        Testar Lote
+                    </button>
+                </div>
+
+                <!-- Aba 1: Simulação Individual -->
+                <div id="sim-single-panel">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <input type="text" id="simulation-input" class="bg-slate-100 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm outline-none text-slate-800 dark:text-slate-100 flex-grow code-font font-bold tracking-widest" placeholder="Ex: 11010">
+                        <div class="flex gap-2">
+                            <button onclick="runFastSimulation()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-955 font-extrabold text-xs px-5 py-3 rounded-xl transition uppercase tracking-wider shadow-md shadow-cyan-500/20">
+                                Análise Rápida
+                            </button>
+                            <button onclick="startStepByStep()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-4 py-3 rounded-xl transition uppercase font-bold tracking-wider">
+                                Passo a Passo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Painel Passo a Passo Ocultável -->
+                    <div id="step-panel" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-900">
+                        <div class="flex items-center justify-between mb-3 bg-slate-50 dark:bg-slate-955/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cadeia:</span>
+                                <div id="step-string-display" class="text-lg font-bold code-font tracking-widest text-slate-400 dark:text-slate-500"></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="nextStep()" id="next-step-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-955 text-xs font-bold py-1.5 px-3 rounded-lg transition">Próximo</button>
+                                <button onclick="stopSimulation()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-lg transition">Parar</button>
+                            </div>
+                        </div>
+                        <!-- Estado de feedback do passo -->
+                        <div id="step-status" class="text-xs font-mono text-cyan-600 dark:text-cyan-400"></div>
+                    </div>
+
+                    <!-- Caixa de Feedback e Resultado -->
+                    <div id="simulation-feedback" class="hidden mt-4 p-4 rounded-xl text-center font-bold text-sm"></div>
+                </div>
+
+                <!-- Aba 2: Teste em Lote -->
+                <div id="sim-batch-panel" class="hidden">
+                    <div class="flex flex-col gap-3">
+                        <textarea id="batch-input" rows="4" class="bg-slate-100 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm outline-none text-slate-800 dark:text-slate-100 code-font font-semibold" placeholder="Insira uma cadeia por linha&#10;Ex:&#10;11010&#10;0011&#10;111"></textarea>
+                        <button onclick="runBatchSimulation()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-955 font-extrabold text-xs px-5 py-3 rounded-xl transition uppercase tracking-wider shadow-md shadow-cyan-500/20 self-start">
+                            Validar Cadeias em Lote
+                        </button>
+                    </div>
+
+                    <!-- Tabela de Resultados em Lote -->
+                    <div id="batch-results-container" class="hidden mt-4 max-h-[250px] overflow-y-auto border border-slate-100 dark:border-slate-900 rounded-xl">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-900">
+                                    <th class="py-2.5 px-4">Cadeia</th>
+                                    <th class="py-2.5 px-4">Caminho / Estado Final</th>
+                                    <th class="py-2.5 px-4 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batch-results-body" class="divide-y divide-slate-100 dark:divide-slate-900/40">
+                                <!-- Resultados via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de Alerta Customizado (Evitando alerts nativos) -->
+    <div id="custom-alert" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-2xl">
+            <div class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4 bg-rose-500/10 border border-rose-500/20">
+                <svg class="w-6 h-6 text-rose-500 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 id="alert-title" class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Mensagem do Sistema</h3>
+            <p id="alert-message" class="text-slate-500 dark:text-slate-400 text-xs mb-6"></p>
+            <button onclick="closeAlert()" class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu de Contexto Customizado para o Canvas -->
+    <div id="canvas-context-menu" class="hidden fixed bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 min-w-[160px] text-xs">
+        <button onclick="contextSetInitial()" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-750 dark:text-slate-200 flex items-center gap-2">
+            ⭐ Definir como Inicial
+        </button>
+        <button onclick="contextToggleAcceptance()" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-750 dark:text-slate-200 flex items-center gap-2">
+            ✔ Alternar Aceitação
+        </button>
+        <div class="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+        <button onclick="contextDeleteState()" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-450 flex items-center gap-2 font-medium">
+            ❌ Excluir Estado
+        </button>
+    </div>
+
+    <!-- Modal de Configuração de Transição Visual -->
+    <div id="transition-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-2xl">
+            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-2 code-font">Configurar Transição</h3>
+            <p id="transition-modal-desc" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
+            
+            <div id="transition-symbols-container" class="flex flex-wrap justify-center gap-2 mb-6">
+                <!-- Símbolos via JS -->
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="closeTransitionModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 rounded-xl transition text-xs">
+                    Cancelar
+                </button>
+                <button onclick="confirmTransitionConfig()" class="w-1/2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-xl transition text-xs shadow-md shadow-cyan-500/10">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950/80 p-4 text-center text-[11px] text-slate-400 dark:text-slate-500 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <p>© <span id="year-display"></span> — Desenvolvido para modelagem e análise formal de autômatos.</p>
+            <div class="flex gap-4">
+                <span>Professor Msc. Luciano R. Nascimento</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Aplicação e Lógica do Modelador -->
+    <script>
+        document.getElementById('year-display').textContent = new Date().getFullYear();
+
+        // ----------------- CONTROLE DE TEMAS (CLARO E ESCURO) -----------------
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const hasDarkClass = document.documentElement.classList.contains('dark');
+            
+            if (savedTheme === 'light' || (!savedTheme && !hasDarkClass)) {
+                setLightTheme();
+            } else {
+                setDarkTheme();
+            }
+        }
+
+        function setLightTheme() {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            document.getElementById('theme-sun').classList.add('hidden');
+            document.getElementById('theme-moon').classList.remove('hidden');
+            redrawGraph();
+        }
+
+        function setDarkTheme() {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            document.getElementById('theme-moon').classList.add('hidden');
+            document.getElementById('theme-sun').classList.remove('hidden');
+            redrawGraph();
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                setLightTheme();
+            } else {
+                setDarkTheme();
+            }
+        }
+
+        function isDarkTheme() {
+            return document.documentElement.classList.contains('dark');
+        }
+
+        // ----------------- ESTADO GLOBAL DO AUTÔMATO -----------------
+        let alphabet = ['0', '1'];
+        let states = []; 
+        let initialStateId = "";
+        let acceptingStateIds = [];
+        let transitions = {}; // { 'stateId': { 'symbol': 'destId' } }
+
+        // Variáveis de Rendering e Interação
+        const canvas = document.getElementById('automaton-canvas');
+        const ctx = canvas.getContext('2d');
+        let selectedNode = null;
+        let isDragging = false;
+        let mousePos = { x: 0, y: 0 };
+        const nodeRadius = 26;
+
+        // Variáveis de Transição Visual (Shift + Arrastar ou Modo Desenho)
+        let canvasMode = 'drag'; // 'drag' ou 'transition'
+        let isDrawingTransition = false;
+        let transitionSourceNode = null;
+        let transitionTempTargetPos = { x: 0, y: 0 };
+        let lastTouchPos = { x: 0, y: 0 };
+
+        // Variáveis do Menu de Contexto Canvas
+        let contextNode = null;
+
+        // Variáveis do Modal de Transição
+        let modalFromState = "";
+        let modalToState = "";
+        let modalSelectedSymbols = [];
+
+        // Variáveis do Simulador Passo a Passo
+        let stepInterval = null;
+        let stepState = null;
+        let stepIndex = 0;
+        let stepString = "";
+
+        // ----------------- INICIALIZAÇÃO DA PÁGINA -----------------
+        window.addEventListener('load', () => {
+            initTheme();
+            setupCanvasSize();
+            if (!loadFromLocalStorage()) {
+                loadExample('ends1'); // Carrega padrão se não houver salvo
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            setupCanvasSize();
+            redrawGraph();
+        });
+
+        function setupCanvasSize() {
+            const container = document.getElementById('canvas-container');
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+            ctx.scale(dpr, dpr);
+        }
+
+        // Alertas Customizados (Sem usar alert() nativo em iframes)
+        function showAlert(title, msg) {
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = msg;
+            document.getElementById('custom-alert').classList.remove('hidden');
+        }
+
+        // ----------------- PERSISTÊNCIA (LOCAL STORAGE / JSON) -----------------
+        function saveToLocalStorage() {
+            const data = {
+                alphabet,
+                states,
+                initialStateId,
+                acceptingStateIds,
+                transitions
+            };
+            localStorage.setItem('modelador_afd_state', JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('modelador_afd_state');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    alphabet = data.alphabet || ['0', '1'];
+                    document.getElementById('alphabet-input').value = alphabet.join(', ');
+                    states = data.states || [];
+                    initialStateId = data.initialStateId || "";
+                    acceptingStateIds = data.acceptingStateIds || [];
+                    transitions = data.transitions || {};
+                    
+                    if (states.length > 0) {
+                        buildStateTable();
+                        redrawGraph();
+                        return true;
+                    }
+                } catch (e) {
+                    console.error("Erro ao carregar do localStorage", e);
+                }
+            }
+            return false;
+        }
+
+        function exportToJSON() {
+            const data = {
+                alphabet,
+                states,
+                initialStateId,
+                acceptingStateIds,
+                transitions
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `automato-afd.json`;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!data.alphabet || !data.states || !data.transitions) {
+                        throw new Error("Formato inválido de arquivo JSON.");
+                    }
+
+                    stopSimulation();
+                    alphabet = data.alphabet;
+                    document.getElementById('alphabet-input').value = alphabet.join(', ');
+                    states = data.states;
+                    initialStateId = data.initialStateId || "";
+                    acceptingStateIds = data.acceptingStateIds || [];
+                    transitions = data.transitions;
+
+                    buildStateTable();
+                    redrawGraph();
+                    saveToLocalStorage();
+                    showAlert("Projeto Carregado", "O autômato foi importado com sucesso!");
+                } catch (err) {
+                    showAlert("Erro de Importação", "Arquivo JSON inválido: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Limpar input
+        }
+
+        function closeAlert() {
+            document.getElementById('custom-alert').classList.add('hidden');
+        }
+
+        function updateAlphabet() {
+            const val = document.getElementById('alphabet-input').value;
+            const parsed = val.split(',')
+                             .map(s => s.trim())
+                             .filter(s => s.length > 0);
+            
+            if (parsed.length === 0) {
+                showAlert("Erro de Alfabeto", "O alfabeto precisa conter pelo menos um símbolo válido.");
+                return;
+            }
+
+            alphabet = parsed;
+
+            // Ajustar transições para se adequar ao novo alfabeto
+            states.forEach(node => {
+                const oldTrans = transitions[node.id] || {};
+                transitions[node.id] = {};
+                alphabet.forEach(sym => {
+                    transitions[node.id][sym] = oldTrans[sym] || node.id;
+                });
+            });
+
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // Cria e adiciona um novo nó ao array de estados (com correção de ID duplicado)
+        function addNewState(x = null, y = null) {
+            let nextIndex = 0;
+            while (states.some(s => s.id === `q${nextIndex}`)) {
+                nextIndex++;
+            }
+            const id = `q${nextIndex}`;
+            
+            const container = document.getElementById('canvas-container');
+            if (x === null) {
+                x = (container.clientWidth / 2) + (Math.random() * 100 - 50);
+            }
+            if (y === null) {
+                y = (container.clientHeight / 2) + (Math.random() * 100 - 50);
+            }
+
+            const newState = { id, x, y };
+            states.push(newState);
+
+            // Transições iniciais (loops no próprio estado)
+            transitions[id] = {};
+            alphabet.forEach(sym => {
+                transitions[id][sym] = id;
+            });
+
+            if (states.length === 1 || !initialStateId) {
+                initialStateId = id;
+            }
+
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        function removeState(id) {
+            if (states.length <= 1) {
+                showAlert("Ação Negada", "O autômato precisa conter pelo menos um estado.");
+                return;
+            }
+
+            // Remover do vetor principal de estados
+            states = states.filter(s => s.id !== id);
+
+            // Remover das aceitações
+            acceptingStateIds = acceptingStateIds.filter(fId => fId !== id);
+
+            // Se removeu o inicial, define outro como inicial
+            if (initialStateId === id && states.length > 0) {
+                initialStateId = states[0].id;
+            }
+
+            // Remover regras associadas
+            delete transitions[id];
+
+            // Ajustar transições que apontavam para este nó
+            Object.keys(transitions).forEach(fromId => {
+                Object.keys(transitions[fromId]).forEach(sym => {
+                    if (transitions[fromId][sym] === id) {
+                        transitions[fromId][sym] = fromId; // joga de volta para loop
+                    }
+                });
+            });
+
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        function toggleAcceptance(id) {
+            const index = acceptingStateIds.indexOf(id);
+            if (index > -1) {
+                acceptingStateIds.splice(index, 1);
+            } else {
+                acceptingStateIds.push(id);
+            }
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // Define o estado inicial da computação ativa
+        function setInitialState(id) {
+            initialStateId = id;
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        function changeTransition(fromState, symbol, destState) {
+            if (transitions[fromState]) {
+                transitions[fromState][symbol] = destState;
+                redrawGraph();
+                saveToLocalStorage();
+            }
+        }
+
+        function clearAutomaton() {
+            states = [];
+            acceptingStateIds = [];
+            initialStateId = "";
+            transitions = {};
+            addNewState();
+            saveToLocalStorage();
+        }
+
+        // ----------------- RENDERIZAÇÃO DA TABELA (UI) -----------------
+        function buildStateTable() {
+            const tbody = document.getElementById('state-table-body');
+            tbody.innerHTML = "";
+            document.getElementById('state-count').textContent = states.length;
+
+            states.forEach(node => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 dark:border-slate-900/40 hover:bg-slate-100/50 dark:hover:bg-slate-900/20 transition duration-150";
+
+                // Nome do nó
+                const tdName = document.createElement('td');
+                tdName.className = "py-3 text-slate-800 dark:text-slate-200 code-font font-bold";
+                tdName.textContent = node.id;
+                tr.appendChild(tdName);
+
+                // Checkbox Inicial
+                const tdInit = document.createElement('td');
+                tdInit.className = "py-3 text-center";
+                tdInit.innerHTML = `
+                    <input type="radio" name="initial-node" ${initialStateId === node.id ? 'checked' : ''} 
+                           onchange="setInitialState('${node.id}')"
+                           class="w-4 h-4 rounded-full text-cyan-500 focus:ring-cyan-500 bg-slate-100 dark:bg-slate-955 border-slate-300 dark:border-slate-800 cursor-pointer">
+                `;
+                tr.appendChild(tdInit);
+
+                // Checkbox Final (Aceitação)
+                const tdFinal = document.createElement('td');
+                tdFinal.className = "py-3 text-center";
+                tdFinal.innerHTML = `
+                    <input type="checkbox" ${acceptingStateIds.includes(node.id) ? 'checked' : ''} 
+                           onchange="toggleAcceptance('${node.id}')"
+                           class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-955 border-slate-300 dark:border-slate-800 cursor-pointer">
+                `;
+                tr.appendChild(tdFinal);
+
+                // Coluna das transições (Mapeia uma linha por símbolo do alfabeto)
+                const tdTrans = document.createElement('td');
+                tdTrans.className = "py-3 pl-3 flex flex-col gap-2";
+                
+                alphabet.forEach(sym => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400";
+                    row.innerHTML = `<span>Ao ler <strong class="text-cyan-600 dark:text-cyan-400 font-mono">${sym}</strong> vai para:</span>`;
+                    
+                    const select = document.createElement('select');
+                    select.className = "bg-slate-100 dark:bg-slate-955 border border-slate-300 dark:border-slate-800 rounded-md text-slate-800 dark:text-slate-300 text-[10px] py-1 px-2 focus:border-cyan-500 outline-none code-font cursor-pointer";
+                    select.onchange = (e) => changeTransition(node.id, sym, e.target.value);
+                    
+                    states.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.id;
+                        select.appendChild(opt);
+                    });
+                    
+                    select.value = transitions[node.id]?.[sym] || node.id;
+                    row.appendChild(select);
+                    tdTrans.appendChild(row);
+                });
+                tr.appendChild(tdTrans);
+
+                // Ações de exclusão
+                const tdActions = document.createElement('td');
+                tdActions.className = "py-3 text-center";
+                tdActions.innerHTML = `
+                    <button onclick="removeState('${node.id}')" class="text-rose-600 dark:text-rose-500 hover:text-rose-400 transition" title="Excluir nó">
+                        Excluir
+                    </button>
+                `;
+                tr.appendChild(tdActions);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ----------------- MOTOR DE DRAWING (CANVAS) -----------------
+        function redrawGraph(simActiveState = null) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid(ctx);
+            drawTransitions(ctx, simActiveState);
+            drawStates(ctx, simActiveState);
+        }
+
+        function drawGrid(c) {
+            const dark = isDarkTheme();
+            c.strokeStyle = dark ? '#0f172a' : '#f1f5f9';
+            c.lineWidth = 1;
+            const gridSpacing = 40;
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            for (let x = 0; x < w; x += gridSpacing) {
+                c.beginPath();
+                c.moveTo(x, 0);
+                c.lineTo(x, h);
+                c.stroke();
+            }
+            for (let y = 0; y < h; y += gridSpacing) {
+                c.beginPath();
+                c.moveTo(0, y);
+                c.lineTo(w, y);
+                c.stroke();
+            }
+        }
+
+        function drawTransitions(c, simActiveState) {
+            const dark = isDarkTheme();
+            states.forEach(fromNode => {
+                // Junta transições que têm o mesmo destino para colocar no mesmo rótulo
+                const destMap = {}; // { 'destId': ['0', '1'] }
+                
+                alphabet.forEach(sym => {
+                    const toId = transitions[fromNode.id]?.[sym];
+                    if (toId) {
+                        if (!destMap[toId]) destMap[toId] = [];
+                        destMap[toId].push(sym);
+                    }
+                });
+
+                Object.keys(destMap).forEach(toId => {
+                    const toNode = states.find(s => s.id === toId);
+                    if (!toNode) return;
+
+                    const label = destMap[toId].join(', ');
+                    const isTransitionActive = (simActiveState && simActiveState.from === fromNode.id && simActiveState.to === toId);
+
+                    if (fromNode.id === toId) {
+                        drawSelfLoop(c, fromNode, label, isTransitionActive);
+                    } else {
+                        // Verifica se existe transição bidirecional para arquear a linha
+                        const reverseExists = transitions[toId] && Object.values(transitions[toId]).includes(fromNode.id);
+                        drawEdge(c, fromNode, toNode, label, reverseExists, isTransitionActive);
+                    }
+                });
+            });
+        }
+
+        function drawSelfLoop(c, node, label, isActive) {
+            const dark = isDarkTheme();
+            const x = node.x;
+            const y = node.y - nodeRadius;
+
+            // Cores do tema adaptativo
+            const lineStroke = isActive ? '#22d3ee' : (dark ? '#475569' : '#94a3b8');
+            const textFill = isActive ? '#22d3ee' : (dark ? '#94a3b8' : '#475569');
+
+            c.strokeStyle = lineStroke;
+            c.lineWidth = isActive ? 3 : 1.5;
+            c.fillStyle = textFill;
+
+            c.beginPath();
+            // Loop em formato de bolha de ar na parte superior do nó
+            c.arc(x, y - 10, 16, Math.PI * 0.1, Math.PI * 0.9, true);
+            c.stroke();
+
+            // Desenhar ponta da seta
+            const arrowAngle = Math.PI * 0.1;
+            const arrowX = x + 16 * Math.cos(arrowAngle);
+            const arrowY = y - 10 - 16 * Math.sin(arrowAngle);
+            drawArrowHead(c, arrowX, arrowY, Math.PI * 0.45);
+
+            // Escrever o texto do símbolo
+            c.font = "bold 12px 'Fira Code', monospace";
+            c.textAlign = 'center';
+            c.fillText(label, x, y - 32);
+        }
+
+        function drawEdge(c, from, to, label, curved, isActive) {
+            const dark = isDarkTheme();
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            const ux = dx / dist;
+            const uy = dy / dist;
+
+            // Vetor perpendicular
+            const px = -uy;
+            const py = ux;
+
+            const lineStroke = isActive ? '#22d3ee' : (dark ? '#475569' : '#94a3b8');
+            const textFill = isActive ? '#22d3ee' : (dark ? '#94a3b8' : '#475569');
+
+            c.strokeStyle = lineStroke;
+            c.lineWidth = isActive ? 3 : 1.5;
+            c.fillStyle = textFill;
+
+            if (curved) {
+                // Desenha curva quadrática para transições bidirecionais
+                const bend = 24; 
+                const midX = (from.x + to.x) / 2 + px * bend;
+                const midY = (from.y + to.y) / 2 + py * bend;
+
+                // Encontra intersecção aproximada na borda do nó de destino
+                const targetX = to.x - ux * nodeRadius + px * 6;
+                const targetY = to.y - uy * nodeRadius + py * 6;
+                const startX = from.x + ux * nodeRadius + px * 6;
+                const startY = from.y + uy * nodeRadius + py * 6;
+
+                c.beginPath();
+                c.moveTo(startX, startY);
+                c.quadraticCurveTo(midX, midY, targetX, targetY);
+                c.stroke();
+
+                // Ângulo aproximado de chegada
+                const angle = Math.atan2(targetY - midY, targetX - midX);
+                drawArrowHead(c, targetX, targetY, angle);
+
+                // Texto do rótulo
+                c.font = "bold 12px 'Fira Code', monospace";
+                c.textAlign = 'center';
+                c.fillText(label, midX + px * 4, midY + py * 4 + 4);
+            } else {
+                // Desenha linha reta comum
+                const startX = from.x + ux * nodeRadius;
+                const startY = from.y + uy * nodeRadius;
+                const endX = to.x - ux * nodeRadius;
+                const endY = to.y - uy * nodeRadius;
+
+                c.beginPath();
+                c.moveTo(startX, startY);
+                c.lineTo(endX, endY);
+                c.stroke();
+
+                const angle = Math.atan2(endY - startY, endX - startX);
+                drawArrowHead(c, endX, endY, angle);
+
+                // Texto do rótulo ligeiramente deslocado
+                const textX = (startX + endX) / 2 - px * 10;
+                const textY = (startY + endY) / 2 - py * 10 + 4;
+                c.font = "bold 12px 'Fira Code', monospace";
+                c.textAlign = 'center';
+                c.fillText(label, textX, textY);
+            }
+        }
+
+        function drawArrowHead(c, x, y, angle) {
+            c.beginPath();
+            c.moveTo(x, y);
+            c.lineTo(x - 10 * Math.cos(angle - 0.35), y - 10 * Math.sin(angle - 0.35));
+            c.lineTo(x - 8 * Math.cos(angle), y - 8 * Math.sin(angle));
+            c.lineTo(x - 10 * Math.cos(angle + 0.35), y - 10 * Math.sin(angle + 0.35));
+            c.closePath();
+            c.fill();
+        }
+
+        function drawStates(c, simActiveState) {
+            const dark = isDarkTheme();
+            states.forEach(node => {
+                const isCurrent = (simActiveState && simActiveState.current === node.id);
+                const isInitial = (node.id === initialStateId);
+                const isFinal = acceptingStateIds.includes(node.id);
+
+                // Definir cor e brilho baseado no estado ativo
+                let strokeStyle = dark ? '#475569' : '#94a3b8';
+                let glowColor = 'transparent';
+
+                if (isCurrent) {
+                    strokeStyle = '#22d3ee';
+                    glowColor = 'rgba(34, 211, 238, 0.4)';
+                } else if (isFinal) {
+                    strokeStyle = '#10b981';
+                }
+
+                // Desenhar anel de brilho
+                if (isCurrent) {
+                    c.beginPath();
+                    c.arc(node.x, node.y, nodeRadius + 5, 0, Math.PI * 2);
+                    c.fillStyle = glowColor;
+                    c.fill();
+                }
+
+                // Círculo principal - Corrigido passando todos os 5 argumentos obrigatórios para o método 'arc'
+                c.beginPath();
+                c.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
+                c.fillStyle = dark ? '#0f172a' : '#ffffff';
+                c.fill();
+                c.strokeStyle = strokeStyle;
+                c.lineWidth = isCurrent ? 3 : (isInitial ? 2.5 : 1.5);
+                c.stroke();
+
+                // Desenha círculo duplo se for de aceitação
+                if (isFinal) {
+                    c.beginPath();
+                    c.arc(node.x, node.y, nodeRadius - 5, 0, Math.PI * 2);
+                    c.strokeStyle = strokeStyle;
+                    c.lineWidth = 1;
+                    c.stroke();
+                }
+
+                // Seta de estado inicial
+                if (isInitial) {
+                    c.strokeStyle = dark ? '#64748b' : '#475569';
+                    c.lineWidth = 2;
+                    c.fillStyle = dark ? '#64748b' : '#475569';
+                    
+                    const startX = node.x - nodeRadius - 30;
+                    const endX = node.x - nodeRadius;
+                    c.beginPath();
+                    c.moveTo(startX, node.y);
+                    c.lineTo(endX, node.y);
+                    c.stroke();
+                    
+                    // Ponta da seta
+                    drawArrowHead(c, endX, node.y, 0);
+                }
+
+                // Rótulo do estado
+                c.fillStyle = isCurrent ? '#22d3ee' : (dark ? '#f1f5f9' : '#0f172a');
+                c.font = "bold 13px 'Fira Code', monospace";
+                c.textAlign = 'center';
+                c.fillText(node.id, node.x, node.y + 4);
+            });
+        }
+
+        // ----------------- ARRASTAR E SOLTAR E GESTOS NO CANVAS -----------------
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mouseleave', handleMouseUp);
+        canvas.addEventListener('dblclick', handleDoubleClick);
+        canvas.addEventListener('contextmenu', handleContextMenu);
+
+        // Suporte a dispositivos móveis
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd);
+
+        function getCanvasMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: evt.clientX - rect.left,
+                y: evt.clientY - rect.top
+            };
+        }
+
+        function handleMouseDown(evt) {
+            const pos = getCanvasMousePos(evt);
+            const clickedNode = states.find(s => {
+                const dist = Math.sqrt((s.x - pos.x) ** 2 + (s.y - pos.y) ** 2);
+                return dist <= nodeRadius + 10;
+            });
+
+            if (clickedNode) {
+                if (evt.shiftKey || canvasMode === 'transition') {
+                    // Modo criar transição
+                    isDrawingTransition = true;
+                    transitionSourceNode = clickedNode;
+                    transitionTempTargetPos = { x: pos.x, y: pos.y };
+                } else {
+                    // Mover nó normal
+                    selectedNode = clickedNode;
+                    isDragging = true;
+                }
+                hideContextMenu();
+            }
+        }
+
+        function handleMouseMove(evt) {
+            const pos = getCanvasMousePos(evt);
+            
+            if (isDrawingTransition && transitionSourceNode) {
+                transitionTempTargetPos = { x: pos.x, y: pos.y };
+                redrawGraph();
+                return;
+            }
+
+            if (!isDragging || !selectedNode) return;
+            
+            const padding = 35;
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+
+            selectedNode.x = Math.max(padding, Math.min(w - padding, pos.x));
+            selectedNode.y = Math.max(padding, Math.min(h - padding, pos.y));
+
+            redrawGraph();
+        }
+
+        function handleMouseUp(evt) {
+            if (isDrawingTransition && transitionSourceNode) {
+                isDrawingTransition = false;
+                const pos = getCanvasMousePos(evt);
+                const targetNode = states.find(s => {
+                    const dist = Math.sqrt((s.x - pos.x) ** 2 + (s.y - pos.y) ** 2);
+                    return dist <= nodeRadius + 10;
+                });
+                
+                if (targetNode) {
+                    openTransitionConfigModal(transitionSourceNode.id, targetNode.id);
+                }
+                
+                transitionSourceNode = null;
+                redrawGraph();
+            }
+
+            if (isDragging) {
+                isDragging = false;
+                selectedNode = null;
+                saveToLocalStorage(); // Salvar posições após arrastar
+            }
+        }
+
+        function handleDoubleClick(evt) {
+            const pos = getCanvasMousePos(evt);
+            const clickedNode = states.find(s => {
+                const dist = Math.sqrt((s.x - pos.x) ** 2 + (s.y - pos.y) ** 2);
+                return dist <= nodeRadius + 10;
+            });
+
+            if (clickedNode) {
+                // Clique duplo no estado alterna sua aceitação
+                toggleAcceptance(clickedNode.id);
+                buildStateTable();
+            } else {
+                // Clique duplo no vazio cria um estado ali
+                addNewState(pos.x, pos.y);
+            }
+        }
+
+        // ----------------- MENU DE CONTEXTO DO CANVAS (BOTÃO DIREITO) -----------------
+        function handleContextMenu(evt) {
+            evt.preventDefault();
+            const pos = getCanvasMousePos(evt);
+            const clickedNode = states.find(s => {
+                const dist = Math.sqrt((s.x - pos.x) ** 2 + (s.y - pos.y) ** 2);
+                return dist <= nodeRadius + 10;
+            });
+
+            const menu = document.getElementById('canvas-context-menu');
+            if (clickedNode) {
+                contextNode = clickedNode;
+                menu.style.left = `${evt.clientX + 5}px`;
+                menu.style.top = `${evt.clientY + 5}px`;
+                menu.classList.remove('hidden');
+            } else {
+                hideContextMenu();
+            }
+        }
+
+        function hideContextMenu() {
+            const menu = document.getElementById('canvas-context-menu');
+            menu.classList.add('hidden');
+            contextNode = null;
+        }
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('canvas-context-menu');
+            if (menu && !menu.contains(e.target)) {
+                hideContextMenu();
+            }
+        });
+
+        function contextSetInitial() {
+            if (contextNode) {
+                setInitialState(contextNode.id);
+                buildStateTable();
+            }
+            hideContextMenu();
+        }
+
+        function contextToggleAcceptance() {
+            if (contextNode) {
+                toggleAcceptance(contextNode.id);
+                buildStateTable();
+            }
+            hideContextMenu();
+        }
+
+        function contextDeleteState() {
+            if (contextNode) {
+                removeState(contextNode.id);
+            }
+            hideContextMenu();
+        }
+
+        // ----------------- ALTERNADOR DE MODO DO CANVAS (DESENHAR/MOVER) -----------------
+        function toggleDrawMode() {
+            const btn = document.getElementById('btn-draw-mode');
+            const indicator = document.getElementById('draw-mode-indicator');
+            const label = btn.querySelector('span:not(#draw-mode-indicator)');
+            
+            if (canvasMode === 'drag') {
+                canvasMode = 'transition';
+                indicator.className = "w-2 h-2 rounded-full bg-cyan-500 animate-pulse";
+                btn.classList.add('border-cyan-500', 'text-cyan-505');
+                label.textContent = "Criar Transições";
+            } else {
+                canvasMode = 'drag';
+                indicator.className = "w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500";
+                btn.classList.remove('border-cyan-500', 'text-cyan-505');
+                label.textContent = "Mover Nós";
+            }
+        }
+
+        // Eventos móveis adaptados
+        function handleTouchStart(evt) {
+            if (evt.touches.length === 0) return;
+            const touch = evt.touches[0];
+            lastTouchPos = getCanvasMousePos(touch);
+            
+            // Impede rolagem apenas se estiver sobre um nó
+            const clickedNode = states.find(s => {
+                const dist = Math.sqrt((s.x - lastTouchPos.x) ** 2 + (s.y - lastTouchPos.y) ** 2);
+                return dist <= nodeRadius + 15;
+            });
+            if (clickedNode) {
+                evt.preventDefault();
+                handleMouseDown(touch);
+            }
+        }
+
+        function handleTouchMove(evt) {
+            if (evt.touches.length === 0) return;
+            const touch = evt.touches[0];
+            lastTouchPos = getCanvasMousePos(touch);
+            if (isDragging || isDrawingTransition) {
+                evt.preventDefault();
+                handleMouseMove(touch);
+            }
+        }
+
+        function handleTouchEnd(evt) {
+            if (isDrawingTransition && transitionSourceNode) {
+                isDrawingTransition = false;
+                const targetNode = states.find(s => {
+                    const dist = Math.sqrt((s.x - lastTouchPos.x) ** 2 + (s.y - lastTouchPos.y) ** 2);
+                    return dist <= nodeRadius + 15;
+                });
+                
+                if (targetNode) {
+                    openTransitionConfigModal(transitionSourceNode.id, targetNode.id);
+                }
+                transitionSourceNode = null;
+                redrawGraph();
+            }
+
+            if (isDragging) {
+                isDragging = false;
+                selectedNode = null;
+                saveToLocalStorage();
+            }
+        }
+
+        // Auto-Organizar nós em círculo geométrico
+        function autoLayoutCircle() {
+            if (states.length === 0) return;
+            
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const layoutRadius = Math.min(w, h) * 0.32;
+
+            states.forEach((node, idx) => {
+                const theta = (2 * Math.PI * idx) / states.length - Math.PI / 2;
+                node.x = centerX + layoutRadius * Math.cos(theta);
+                node.y = centerY + layoutRadius * Math.sin(theta);
+            });
+
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // ----------------- MODAL DE TRANSIÇÃO VISUAL -----------------
+        function openTransitionConfigModal(fromId, toId) {
+            modalFromState = fromId;
+            modalToState = toId;
+            modalSelectedSymbols = [];
+
+            // Preenche com símbolos que já transicionam de origem para destino
+            alphabet.forEach(sym => {
+                if (transitions[fromId]?.[sym] === toId) {
+                    modalSelectedSymbols.push(sym);
+                }
+            });
+
+            const desc = document.getElementById('transition-modal-desc');
+            desc.innerHTML = `Ligar transição de <strong class="text-cyan-600 dark:text-cyan-400 font-mono">${fromId}</strong> para <strong class="text-cyan-600 dark:text-cyan-400 font-mono">${toId}</strong> nos seguintes símbolos:`;
+
+            const container = document.getElementById('transition-symbols-container');
+            container.innerHTML = "";
+
+            alphabet.forEach(sym => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = getSymbolBtnClass(sym);
+                btn.textContent = sym;
+                btn.onclick = () => toggleModalSymbol(sym, btn);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('transition-modal').classList.remove('hidden');
+        }
+
+        function getSymbolBtnClass(sym) {
+            const isActive = modalSelectedSymbols.includes(sym);
+            const base = "px-4 py-2.5 rounded-xl font-bold font-mono text-sm transition ";
+            if (isActive) {
+                return base + "bg-cyan-500 text-slate-955 shadow-md shadow-cyan-500/20 border border-transparent";
+            } else {
+                return base + "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/50";
+            }
+        }
+
+        function toggleModalSymbol(sym, btn) {
+            const index = modalSelectedSymbols.indexOf(sym);
+            if (index > -1) {
+                modalSelectedSymbols.splice(index, 1);
+            } else {
+                modalSelectedSymbols.push(sym);
+            }
+            btn.className = getSymbolBtnClass(sym);
+        }
+
+        function closeTransitionModal() {
+            document.getElementById('transition-modal').classList.add('hidden');
+        }
+
+        function confirmTransitionConfig() {
+            if (!transitions[modalFromState]) {
+                transitions[modalFromState] = {};
+            }
+
+            // Mapeia os símbolos ativos. Símbolos desmarcados que antes iam para modalToState voltam a ser auto-loops
+            alphabet.forEach(sym => {
+                if (modalSelectedSymbols.includes(sym)) {
+                    transitions[modalFromState][sym] = modalToState;
+                } else if (transitions[modalFromState][sym] === modalToState) {
+                    transitions[modalFromState][sym] = modalFromState;
+                }
+            });
+
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+            closeTransitionModal();
+        }
+
+        // ----------------- MOTOR DE SIMULAÇÃO (INTERATIVO) -----------------
+        function runFastSimulation() {
+            const input = document.getElementById('simulation-input').value;
+            const feedback = document.getElementById('simulation-feedback');
+            
+            if (states.length === 0) return;
+
+            feedback.classList.remove('hidden');
+
+            let current = initialStateId;
+            let pathLog = `Ponto de partida em <b>${current}</b>.<br>`;
+            let pathOk = true;
+
+            for (let char of input) {
+                if (!alphabet.includes(char)) {
+                    feedback.className = "mt-4 p-4 rounded-xl text-center font-bold text-sm bg-amber-500/10 text-amber-500 border border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+                    feedback.innerHTML = `O caractere "${char}" não faz parte do alfabeto deste sistema.`;
+                    return;
+                }
+
+                const next = transitions[current]?.[char];
+                if (!next) {
+                    pathOk = false;
+                    break;
+                }
+                pathLog += `Leu '${char}': <b>${current}</b> &rarr; <b>${next}</b><br>`;
+                current = next;
+            }
+
+            const accepted = acceptingStateIds.includes(current) && pathOk;
+
+            if (accepted) {
+                feedback.className = "mt-4 p-4 rounded-xl text-center font-bold text-sm bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20";
+                feedback.innerHTML = `✔ Cadeia ACEITA!<br><span class="font-normal text-xs text-slate-500 dark:text-slate-400">${pathLog}</span>`;
+            } else {
+                feedback.className = "mt-4 p-4 rounded-xl text-center font-bold text-sm bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/20";
+                feedback.innerHTML = `✗ Cadeia REJEITADA!<br><span class="font-normal text-xs text-slate-500 dark:text-slate-400">${pathLog} finalizado em estado não-final (${current}).</span>`;
+            }
+        }
+
+        function startStepByStep() {
+            const input = document.getElementById('simulation-input').value;
+            
+            if (states.length === 0) return;
+            if (input === "") {
+                showAlert("Campo Vazio", "Por favor, digite uma cadeia de entrada para executar a simulação passo a passo.");
+                return;
+            }
+
+            // Validar se todos caracteres são permitidos
+            for (let char of input) {
+                if (!alphabet.includes(char)) {
+                    showAlert("Alfabeto Inválido", `O símbolo "${char}" de sua cadeia não pertence ao alfabeto.`);
+                    return;
+                }
+            }
+
+            stepString = input;
+            stepIndex = 0;
+            stepState = initialStateId;
+            
+            document.getElementById('step-panel').classList.remove('hidden');
+            document.getElementById('simulation-feedback').classList.add('hidden');
+            document.getElementById('next-step-btn').disabled = false;
+
+            updateStepDisplay();
+        }
+
+        function updateStepDisplay() {
+            const display = document.getElementById('step-string-display');
+            display.innerHTML = "";
+
+            for (let i = 0; i < stepString.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = stepString[i];
+                if (i === stepIndex) {
+                    span.className = "text-cyan-600 dark:text-cyan-400 border-b-2 border-cyan-500 dark:border-cyan-400 px-1 font-extrabold bg-cyan-500/10 rounded";
+                } else {
+                    span.className = "px-0.5 text-slate-400 dark:text-slate-500";
+                }
+                display.appendChild(span);
+            }
+
+            const statusText = `Estado Atual: <strong class="text-slate-800 dark:text-white">${stepState}</strong> | Processados: ${stepIndex}/${stepString.length}`;
+            document.getElementById('step-status').innerHTML = statusText;
+
+            redrawGraph({ current: stepState });
+        }
+
+        function nextStep() {
+            if (stepIndex >= stepString.length) {
+                const isAccepted = acceptingStateIds.includes(stepState);
+                const feedback = document.getElementById('simulation-feedback');
+                
+                feedback.classList.remove('hidden');
+                document.getElementById('step-panel').classList.add('hidden');
+
+                if (isAccepted) {
+                    feedback.className = "mt-4 p-4 rounded-xl text-center font-bold text-sm bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20";
+                    feedback.innerHTML = `✔ Simulação concluída: Cadeia ACEITA no estado ${stepState}.`;
+                } else {
+                    feedback.className = "mt-4 p-4 rounded-xl text-center font-bold text-sm bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/20";
+                    feedback.innerHTML = `✗ Simulação concluída: Cadeia REJEITADA no estado não-final ${stepState}.`;
+                }
+
+                redrawGraph();
+                return;
+            }
+
+            const symbol = stepString[stepIndex];
+            const next = transitions[stepState]?.[symbol];
+
+            redrawGraph({ 
+                current: next,
+                from: stepState,
+                to: next
+            });
+
+            stepState = next;
+            stepIndex++;
+
+            setTimeout(() => {
+                updateStepDisplay();
+            }, 300);
+        }
+
+        function stopSimulation() {
+            document.getElementById('step-panel').classList.add('hidden');
+            redrawGraph();
+        }
+
+        // ----------------- ABAS E SIMULAÇÃO EM LOTE -----------------
+        function switchSimTab(tab) {
+            const singleBtn = document.getElementById('tab-sim-single');
+            const batchBtn = document.getElementById('tab-sim-batch');
+            const singlePanel = document.getElementById('sim-single-panel');
+            const batchPanel = document.getElementById('sim-batch-panel');
+
+            if (tab === 'single') {
+                singleBtn.className = "px-4 py-2 text-xs font-bold border-b-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 transition-all uppercase tracking-wider";
+                batchBtn.className = "px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-all uppercase tracking-wider";
+                singlePanel.classList.remove('hidden');
+                batchPanel.classList.add('hidden');
+            } else {
+                batchBtn.className = "px-4 py-2 text-xs font-bold border-b-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 transition-all uppercase tracking-wider";
+                singleBtn.className = "px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-all uppercase tracking-wider";
+                batchPanel.classList.remove('hidden');
+                singlePanel.classList.add('hidden');
+                stopSimulation();
+            }
+        }
+
+        function runBatchSimulation() {
+            const inputVal = document.getElementById('batch-input').value;
+            const container = document.getElementById('batch-results-container');
+            const tbody = document.getElementById('batch-results-body');
+            
+            if (states.length === 0) return;
+            
+            const lines = inputVal.split('\n')
+                                 .map(line => line.trim())
+                                 .filter(line => line.length > 0);
+                                 
+            if (lines.length === 0) {
+                showAlert("Entrada Vazia", "Insira pelo menos uma cadeia para realizar o teste em lote.");
+                return;
+            }
+
+            tbody.innerHTML = "";
+            container.classList.remove('hidden');
+
+            lines.forEach(string => {
+                let current = initialStateId;
+                let pathOk = true;
+                let invalidChar = null;
+
+                for (let char of string) {
+                    if (!alphabet.includes(char)) {
+                        pathOk = false;
+                        invalidChar = char;
+                        break;
+                    }
+                    const next = transitions[current]?.[char];
+                    if (!next) {
+                        pathOk = false;
+                        break;
+                    }
+                    current = next;
+                }
+
+                const accepted = pathOk && acceptingStateIds.includes(current);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-100/50 dark:hover:bg-slate-900/20 transition duration-150 border-b border-slate-100 dark:border-slate-900/40";
+
+                const tdString = document.createElement('td');
+                tdString.className = "py-3 px-4 font-mono font-bold text-slate-800 dark:text-slate-200 tracking-wider";
+                tdString.textContent = string;
+                tr.appendChild(tdString);
+
+                const tdDetails = document.createElement('td');
+                tdDetails.className = "py-3 px-4 text-slate-500 dark:text-slate-400";
+                if (invalidChar) {
+                    tdDetails.innerHTML = `<span class="text-amber-500 font-semibold">Símbolo inválido: "${invalidChar}"</span>`;
+                } else if (!pathOk) {
+                    tdDetails.innerHTML = `<span class="text-rose-500 font-semibold">Transição indefinida</span>`;
+                } else {
+                    tdDetails.innerHTML = `Terminou no estado <strong class="font-mono text-slate-700 dark:text-slate-300 font-bold">${current}</strong>`;
+                }
+                tr.appendChild(tdDetails);
+
+                const tdStatus = document.createElement('td');
+                tdStatus.className = "py-3 px-4 text-center";
+                if (accepted) {
+                    tdStatus.innerHTML = `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                            Aceito
+                        </span>
+                    `;
+                } else {
+                    tdStatus.innerHTML = `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-455 border border-rose-200 dark:border-rose-500/20">
+                            Rejeitado
+                        </span>
+                    `;
+                }
+                tr.appendChild(tdStatus);
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ----------------- CARREGADOR DE EXEMPLOS CLÁSSICOS -----------------
+        const examples = {
+            ends1: {
+                alphabet: ['0', '1'],
+                states: [
+                    { id: 'q0', x: 130, y: 150 },
+                    { id: 'q1', x: 340, y: 150 }
+                ],
+                initialState: 'q0',
+                accepting: ['q1'],
+                transitions: {
+                    'q0': { '0': 'q0', '1': 'q1' },
+                    'q1': { '0': 'q0', '1': 'q1' }
+                }
+            },
+            even0: {
+                alphabet: ['0', '1'],
+                states: [
+                    { id: 'qPar', x: 130, y: 150 },
+                    { id: 'qImp', x: 340, y: 150 }
+                ],
+                initialState: 'qPar',
+                accepting: ['qPar'],
+                transitions: {
+                    'qPar': { '0': 'qImp', '1': 'qPar' },
+                    'qImp': { '0': 'qPar', '1': 'qImp' }
+                }
+            },
+            start1: {
+                alphabet: ['0', '1'],
+                states: [
+                    { id: 'q0', x: 100, y: 150 },
+                    { id: 'qAcc', x: 260, y: 70 },
+                    { id: 'qErr', x: 260, y: 230 }
+                ],
+                initialState: 'q0',
+                accepting: ['qAcc'],
+                transitions: {
+                    'q0': { '0': 'qErr', '1': 'qAcc' },
+                    'qAcc': { '0': 'qAcc', '1': 'qAcc' },
+                    'qErr': { '0': 'qErr', '1': 'qErr' }
+                }
+            }
+        };
+
+        function loadExample(key) {
+            stopSimulation();
+            const ex = examples[key];
+            if (!ex) return;
+
+            alphabet = [...ex.alphabet];
+            document.getElementById('alphabet-input').value = alphabet.join(', ');
+
+            states = JSON.parse(JSON.stringify(ex.states));
+            initialStateId = ex.initialState;
+            acceptingStateIds = [...ex.accepting];
+            transitions = JSON.parse(JSON.stringify(ex.transitions));
+
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // ----------------- EXPORTAÇÃO PARA PNG (ALTA RESOLUÇÃO) -----------------
+        function exportToPNG(theme) {
+            const tempCanvas = document.createElement('canvas');
+            const dpr = 2; // Duplica resolução para LaTeX / Impressão
+            tempCanvas.width = canvas.width * dpr / (window.devicePixelRatio || 1);
+            tempCanvas.height = canvas.height * dpr / (window.devicePixelRatio || 1);
+            
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.scale(dpr, dpr);
+
+            let bgStyle = "transparent";
+            let stateLabelColor = "#f1f5f9";
+            let stateBorderColor = "#475569";
+            let transitionColor = "#64748b";
+            let textFontColor = "#94a3b8";
+
+            if (theme === 'dark') {
+                bgStyle = "#0f172a";
+            } else if (theme === 'light') {
+                bgStyle = "#ffffff";
+                stateLabelColor = "#0f172a";
+                stateBorderColor = "#94a3b8";
+                transitionColor = "#475569";
+                textFontColor = "#1e293b";
+            }
+
+            if (bgStyle !== "transparent") {
+                tempCtx.fillStyle = bgStyle;
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            }
+
+            // Desenha as transições no canvas de exportação
+            states.forEach(fromNode => {
+                const destMap = {};
+                alphabet.forEach(sym => {
+                    const toId = transitions[fromNode.id]?.[sym];
+                    if (toId) {
+                        if (!destMap[toId]) destMap[toId] = [];
+                        destMap[toId].push(sym);
+                    }
+                });
+
+                Object.keys(destMap).forEach(toId => {
+                    const toNode = states.find(s => s.id === toId);
+                    if (!toNode) return;
+
+                    const label = destMap[toId].join(', ');
+                    tempCtx.strokeStyle = transitionColor;
+                    tempCtx.lineWidth = 1.5;
+                    tempCtx.fillStyle = textFontColor;
+
+                    if (fromNode.id === toId) {
+                        const x = fromNode.x;
+                        const y = fromNode.y - nodeRadius;
+                        tempCtx.beginPath();
+                        tempCtx.arc(x, y - 10, 16, Math.PI * 0.1, Math.PI * 0.9, true);
+                        tempCtx.stroke();
+                        drawArrowHead(tempCtx, x + 16 * Math.cos(Math.PI * 0.1), y - 10 - 16 * Math.sin(Math.PI * 0.1), Math.PI * 0.45);
+                        tempCtx.font = "bold 12px 'Fira Code', monospace";
+                        tempCtx.textAlign = 'center';
+                        tempCtx.fillText(label, x, y - 32);
+                    } else {
+                        const reverseExists = transitions[toId] && Object.values(transitions[toId]).includes(fromNode.id);
+                        const dx = toNode.x - fromNode.x;
+                        const dy = toNode.y - fromNode.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const ux = dx / dist;
+                        const uy = dy / dist;
+                        const px = -uy;
+                        const py = ux;
+
+                        if (reverseExists) {
+                            const bend = 24;
+                            const midX = (fromNode.x + toNode.x) / 2 + px * bend;
+                            const midY = (fromNode.y + toNode.y) / 2 + py * bend;
+                            const targetX = toNode.x - ux * nodeRadius + px * 6;
+                            const targetY = toNode.y - uy * nodeRadius + py * 6;
+                            const startX = fromNode.x + ux * nodeRadius + px * 6;
+                            const startY = fromNode.y + uy * nodeRadius + py * 6;
+
+                            tempCtx.beginPath();
+                            tempCtx.moveTo(startX, startY);
+                            tempCtx.quadraticCurveTo(midX, midY, targetX, targetY);
+                            tempCtx.stroke();
+
+                            const angle = Math.atan2(targetY - midY, targetX - midX);
+                            drawArrowHead(tempCtx, targetX, targetY, angle);
+
+                            tempCtx.font = "bold 12px 'Fira Code', monospace";
+                            tempCtx.textAlign = 'center';
+                            tempCtx.fillText(label, midX + px * 4, midY + py * 4 + 4);
+                        } else {
+                            const startX = fromNode.x + ux * nodeRadius;
+                            const startY = fromNode.y + uy * nodeRadius;
+                            const endX = toNode.x - ux * nodeRadius;
+                            const endY = toNode.y - uy * nodeRadius;
+
+                            tempCtx.beginPath();
+                            tempCtx.moveTo(startX, startY);
+                            tempCtx.lineTo(endX, endY);
+                            tempCtx.stroke();
+
+                            const angle = Math.atan2(endY - startY, endX - startX);
+                            drawArrowHead(tempCtx, endX, endY, angle);
+
+                            const textX = (startX + endX) / 2 - px * 10;
+                            const textY = (startY + endY) / 2 - py * 10 + 4;
+                            tempCtx.font = "bold 12px 'Fira Code', monospace";
+                            tempCtx.textAlign = 'center';
+                            tempCtx.fillText(label, textX, textY);
+                        }
+                    }
+                });
+            });
+
+            // Desenha os estados no canvas de exportação
+            states.forEach(node => {
+                const isInitial = (node.id === initialStateId);
+                const isFinal = acceptingStateIds.includes(node.id);
+                const borderC = isFinal ? '#10b981' : stateBorderColor;
+
+                tempCtx.beginPath();
+                tempCtx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
+                tempCtx.fillStyle = theme === 'light' ? '#ffffff' : '#0f172a';
+                tempCtx.fill();
+                tempCtx.strokeStyle = borderC;
+                tempCtx.lineWidth = isInitial ? 2.5 : 1.5;
+                tempCtx.stroke();
+
+                if (isFinal) {
+                    tempCtx.beginPath();
+                    tempCtx.arc(node.x, node.y, nodeRadius - 5, 0, Math.PI * 2);
+                    tempCtx.strokeStyle = borderC;
+                    tempCtx.lineWidth = 1;
+                    tempCtx.stroke();
+                }
+
+                if (isInitial) {
+                    tempCtx.strokeStyle = transitionColor;
+                    tempCtx.lineWidth = 2;
+                    tempCtx.fillStyle = transitionColor;
+                    const startX = node.x - nodeRadius - 30;
+                    const endX = node.x - nodeRadius;
+                    tempCtx.beginPath();
+                    tempCtx.moveTo(startX, node.y);
+                    tempCtx.lineTo(endX, node.y);
+                    tempCtx.stroke();
+                    drawArrowHead(tempCtx, endX, node.y, 0);
+                }
+
+                tempCtx.fillStyle = stateLabelColor;
+                tempCtx.font = "bold 13px 'Fira Code', monospace";
+                tempCtx.textAlign = 'center';
+                tempCtx.fillText(node.id, node.x, node.y + 4);
+            });
+
+            const link = document.createElement('a');
+            link.download = `afd-${theme}-export.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
