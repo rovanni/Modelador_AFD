@@ -114,7 +114,7 @@
                         </button>
                     </div>
 
-                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto pr-1">
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto pr-1 pb-4">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr class="text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-900">
@@ -146,7 +146,7 @@
             <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 rounded-2xl flex flex-col overflow-hidden flex-grow min-h-[400px] relative shadow-sm dark:shadow-none transition-colors duration-200">
                 
                 <!-- Barra de Ferramentas do Canvas -->
-                <div class="p-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-900 flex flex-wrap items-center justify-between gap-2 z-10 transition-colors duration-200">
+                <div class="p-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-900 flex flex-wrap items-center justify-between gap-2 z-10 transition-colors duration-200 shrink-0">
                     <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider code-font font-bold">Grafo Interativo</span>
                     <div class="flex items-center gap-2 flex-wrap">
                         <!-- Botão de Modo de Desenho -->
@@ -177,7 +177,7 @@
                 </div>
                 
                 <!-- Dica para o Usuário -->
-                <div class="p-2 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 text-[10px] text-center text-slate-400 dark:text-slate-500 transition-colors duration-200">
+                <div class="p-2 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 text-[10px] text-center text-slate-400 dark:text-slate-500 transition-colors duration-200 shrink-0">
                     💡 <strong>Atalhos do Grafo:</strong> Clique duplo no vazio para criar estado. Clique duplo no estado para alternar aceitação. Botão direito no estado abre opções. Arraste com Shift (ou mude o Modo) para ligar transições.
                 </div>
             </div>
@@ -557,12 +557,22 @@
             const id = `q${nextIndex}`;
             
             const container = document.getElementById('canvas-container');
+            const padX = 35;
+            const padYTop = 55;
+            const padYBottom = 35;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+
             if (x === null) {
-                x = (container.clientWidth / 2) + (Math.random() * 100 - 50);
+                x = (w / 2) + (Math.random() * 100 - 50);
             }
             if (y === null) {
-                y = (container.clientHeight / 2) + (Math.random() * 100 - 50);
+                y = (h / 2) + (Math.random() * 100 - 50);
             }
+
+            // Garante que novos estados respeitem os limites da tela
+            x = Math.max(padX, Math.min(w - padX, x));
+            y = Math.max(padYTop, Math.min(h - padYBottom, y));
 
             const newState = { id, x, y };
             states.push(newState);
@@ -689,7 +699,10 @@
 
                 // Coluna das transições (Mapeia uma linha por símbolo do alfabeto)
                 const tdTrans = document.createElement('td');
-                tdTrans.className = "py-3 pl-3 flex flex-col gap-2";
+                tdTrans.className = "py-3 pl-3";
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = "flex flex-col gap-2";
                 
                 alphabet.forEach(sym => {
                     const row = document.createElement('div');
@@ -709,8 +722,9 @@
                     
                     select.value = transitions[node.id]?.[sym] || node.id;
                     row.appendChild(select);
-                    tdTrans.appendChild(row);
+                    wrapper.appendChild(row);
                 });
+                tdTrans.appendChild(wrapper);
                 tr.appendChild(tdTrans);
 
                 // Ações de exclusão
@@ -1021,12 +1035,14 @@
 
             if (!isDragging || !selectedNode) return;
             
-            const padding = 35;
+            const padX = 35;
+            const padYTop = 55;
+            const padYBottom = 35;
             const w = canvas.clientWidth;
             const h = canvas.clientHeight;
 
-            selectedNode.x = Math.max(padding, Math.min(w - padding, pos.x));
-            selectedNode.y = Math.max(padding, Math.min(h - padding, pos.y));
+            selectedNode.x = Math.max(padX, Math.min(w - padX, pos.x));
+            selectedNode.y = Math.max(padYTop, Math.min(h - padYBottom, pos.y));
 
             redrawGraph();
         }
