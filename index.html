@@ -824,8 +824,8 @@
             // Desenhar ponta da seta
             const arrowAngle = Math.PI * 0.1;
             const arrowX = x + 16 * Math.cos(arrowAngle);
-            const arrowY = y - 10 - 16 * Math.sin(arrowAngle);
-            drawArrowHead(c, arrowX, arrowY, Math.PI * 0.45);
+            const arrowY = y - 10 + 16 * Math.sin(arrowAngle);
+            drawArrowHead(c, arrowX, arrowY, Math.PI * 0.6);
 
             // Escrever o texto do símbolo
             c.font = "bold 12px 'Fira Code', monospace";
