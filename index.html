@@ -821,11 +821,11 @@
             c.arc(x, y - 10, 16, Math.PI * 0.1, Math.PI * 0.9, true);
             c.stroke();
 
-            // Desenhar ponta da seta
+            // Desenhar ponta da seta (com R=15 para centralizar perfeitamente no traço curvo)
             const arrowAngle = Math.PI * 0.1;
-            const arrowX = x + 16 * Math.cos(arrowAngle);
-            const arrowY = y - 10 + 16 * Math.sin(arrowAngle);
-            drawArrowHead(c, arrowX, arrowY, Math.PI * 0.6);
+            const arrowX = x + 15 * Math.cos(arrowAngle);
+            const arrowY = y - 10 + 15 * Math.sin(arrowAngle);
+            drawArrowHead(c, arrowX, arrowY, Math.PI * 0.62);
 
             // Escrever o texto do símbolo
             c.font = "bold 12px 'Fira Code', monospace";
