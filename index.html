@@ -1595,9 +1595,50 @@
             acceptingStateIds = [...ex.accepting];
             transitions = JSON.parse(JSON.stringify(ex.transitions));
 
+            // Centraliza o grafo dinamicamente conforme o tamanho do canvas do usuário
+            centerGraphCoordinates();
+
             buildStateTable();
             redrawGraph();
             saveToLocalStorage();
+        }
+
+        function centerGraphCoordinates() {
+            if (states.length === 0) return;
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            states.forEach(s => {
+                if (s.x < minX) minX = s.x;
+                if (s.x > maxX) maxX = s.x;
+                if (s.y < minY) minY = s.y;
+                if (s.y > maxY) maxY = s.y;
+            });
+            const graphW = maxX - minX;
+            const graphH = maxY - minY;
+            const graphCX = minX + graphW / 2;
+            const graphCY = minY + graphH / 2;
+
+            const container = document.getElementById('canvas-container');
+            const canvasCX = container && container.clientWidth > 100 ? container.clientWidth / 2 : 250;
+            const canvasCY = container && container.clientHeight > 100 ? container.clientHeight / 2 : 150;
+
+            const dx = canvasCX - graphCX;
+            const dy = canvasCY - graphCY;
+
+            // Fatores de margem de segurança contra corte nas bordas
+            const padX = 35;
+            const padYTop = 55;
+            const padYBottom = 35;
+            const w = container && container.clientWidth > 100 ? container.clientWidth : 500;
+            const h = container && container.clientHeight > 100 ? container.clientHeight : 300;
+
+            states.forEach(s => {
+                s.x += dx;
+                s.y += dy;
+                // Clampa nos limites da tela por segurança
+                s.x = Math.max(padX, Math.min(w - padX, s.x));
+                s.y = Math.max(padYTop, Math.min(h - padYBottom, s.y));
+            });
         }
 
         // ----------------- EXPORTAÇÃO PARA PNG (ALTA RESOLUÇÃO) -----------------
