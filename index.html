@@ -28,6 +28,28 @@
             outline-offset: 2px !important;
             box-shadow: 0 0 0 5px rgba(6, 182, 212, 0.4) !important;
         }
+        /* Estilos para a Barra de Ferramentas Compacta (Estilo Word) */
+        .toolbar-compact .btn-text {
+            display: none !important;
+        }
+        .toolbar-compact .toolbar-label {
+            display: none !important;
+        }
+        .toolbar-compact button {
+            padding: 0.375rem !important;
+            height: 1.875rem;
+            width: 1.875rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem !important;
+        }
+        .toolbar-compact #btn-draw-mode {
+            width: auto !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            gap: 0.25rem !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200">
@@ -78,8 +100,16 @@
                 <!-- Botão de Alternância de Tema -->
                 <button onclick="toggleTheme()" id="theme-toggle-btn" class="p-2.5 rounded-xl bg-slate-200/60 dark:bg-slate-900 hover:bg-slate-300/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-slate-800 transition duration-200" title="Alternar Tema">
                     <!-- Ícone Sol -->
-                    <svg id="theme-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728A9 9 0 115.636 5.636m12.728 12.728L12 12"></path>
+                    <svg id="theme-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 2v2"></path>
+                        <path d="M12 20v2"></path>
+                        <path d="m4.93 4.93 1.41 1.41"></path>
+                        <path d="m17.66 17.66 1.41 1.41"></path>
+                        <path d="M2 12h2"></path>
+                        <path d="M20 12h2"></path>
+                        <path d="m6.34 17.66-1.41 1.41"></path>
+                        <path d="m19.07 4.93-1.41 1.41"></path>
                     </svg>
                     <!-- Ícone Lua -->
                     <svg id="theme-moon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,6 +173,21 @@
                     <button onclick="clearAutomaton()" class="text-rose-500 hover:text-rose-400 transition">Reiniciar Do Zero</button>
                 </div>
             </div>
+
+            <!-- Painel do Validador de Consistência -->
+            <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl shadow-sm dark:shadow-none transition-colors duration-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-900">
+                        <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider code-font">3. Validador de Consistência</h2>
+                        <button onclick="minimizeAutomaton()" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[10px] px-2.5 py-1.5 rounded-lg transition font-bold uppercase tracking-wider">
+                            Minimizar
+                        </button>
+                    </div>
+                    <div id="validator-status" class="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-1">
+                        <!-- Gerado dinamicamente -->
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Coluna Direita: Renderizador de Grafo e Simulador -->
@@ -153,26 +198,151 @@
                 
                 <!-- Barra de Ferramentas do Canvas -->
                 <div class="p-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-900 flex flex-wrap items-center justify-between gap-2 z-10 transition-colors duration-200 shrink-0">
-                    <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider code-font font-bold">Grafo Interativo</span>
-                    <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider code-font font-bold">Grafo Interativo</span>
+                        <button id="btn-toggle-toolbar-size" onclick="toggleToolbarSize()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-650 dark:text-slate-350 text-[10px] px-2 py-0.5 rounded-md transition border border-slate-300/40 dark:border-slate-700 flex items-center gap-1 font-semibold" title="Alternar entre textos nos botões ou apenas ícones">
+                            <svg id="compact-toggle-icon" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h5"></path>
+                            </svg>
+                            <span id="compact-toggle-text">Modo Compacto</span>
+                        </button>
+                    </div>
+                    <div id="graph-toolbar-controls" class="flex items-center gap-1.5 flex-wrap">
                         <!-- Botão de Modo de Desenho -->
-                        <button id="btn-draw-mode" onclick="toggleDrawMode()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition border border-slate-300/40 dark:border-slate-700 flex items-center gap-1.5" title="Alternar entre mover nós ou desenhar transições (ou use Shift+Arrastar)">
-                            <span class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500" id="draw-mode-indicator"></span>
-                            <span>Mover Nós</span>
+                        <button id="btn-draw-mode" onclick="toggleDrawMode()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition border border-slate-300/40 dark:border-slate-700 flex items-center gap-1.5" title="Mover Nós (ou use Shift+Arrastar)">
+                            <span class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0" id="draw-mode-indicator"></span>
+                            <svg id="draw-mode-icon" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                            </svg>
+                            <span class="btn-text">Mover Nós</span>
                         </button>
-                        <button onclick="autoLayoutCircle()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition" title="Reposiciona todos os nós em círculo">
-                            Organizar Nós
+                        
+                        <!-- Divisor -->
+                        <div class="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1.5 toolbar-separator"></div>
+
+                        <!-- Rótulo de Alinhar -->
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider toolbar-label font-bold mr-1">Alinhar:</span>
+
+                        <!-- Alinhar Horizontal -->
+                        <button onclick="alignHorizontal()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Alinhar nós horizontalmente">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M8 6h8M8 18h8"></path>
+                            </svg>
+                            <span class="btn-text">Alinhar H</span>
                         </button>
-                        <div class="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">Exportar:</span>
-                        <button onclick="exportToPNG('dark')" class="bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold">
-                            PNG Escuro
+
+                        <!-- Alinhar Vertical -->
+                        <button onclick="alignVertical()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Alinhar nós verticalmente">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18M6 8v8M18 8v8"></path>
+                            </svg>
+                            <span class="btn-text">Alinhar V</span>
                         </button>
-                        <button onclick="exportToPNG('light')" class="bg-slate-100 hover:bg-slate-200 text-slate-950 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold shadow-sm border border-slate-200 dark:border-none">
-                            PNG Claro
+
+                        <!-- Distribuir Horizontal -->
+                        <button onclick="distributeHorizontal()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Distribuir nós horizontalmente com espaçamento igual">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16M20 4v16M12 6v12"></path>
+                            </svg>
+                            <span class="btn-text">Distribuir H</span>
                         </button>
-                        <button onclick="exportToPNG('transparent')" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition">
-                            Transpar.
+
+                        <!-- Distribuir Vertical -->
+                        <button onclick="distributeVertical()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Distribuir nós verticalmente com espaçamento igual">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16M4 20h16M6 12h12"></path>
+                            </svg>
+                            <span class="btn-text">Distribuir V</span>
+                        </button>
+
+                        <!-- Divisor -->
+                        <div class="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1.5 toolbar-separator"></div>
+
+                        <!-- Rótulo de Layout -->
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider toolbar-label font-bold mr-1">Layout:</span>
+
+                        <!-- Organizar Círculo -->
+                        <button onclick="autoLayoutCircle()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Organizar nós em círculo">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3" fill="none" />
+                                <circle cx="12" cy="4" r="1.5" fill="currentColor" />
+                                <circle cx="20" cy="12" r="1.5" fill="currentColor" />
+                                <circle cx="12" cy="20" r="1.5" fill="currentColor" />
+                                <circle cx="4" cy="12" r="1.5" fill="currentColor" />
+                            </svg>
+                            <span class="btn-text">Círculo</span>
+                        </button>
+
+                        <!-- Organizar Grade -->
+                        <button onclick="layoutGrid()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Organizar nós em grade">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"></path>
+                            </svg>
+                            <span class="btn-text">Grade</span>
+                        </button>
+
+                        <!-- Centralizar Grafo -->
+                        <button onclick="manualCenterGraph()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Centralizar visualização do grafo na tela">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"></circle>
+                                <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
+                            </svg>
+                            <span class="btn-text">Centralizar Vista</span>
+                        </button>
+
+                        <!-- Desfazer -->
+                        <button onclick="undo()" id="btn-undo" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2 py-1.5 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5" title="Desfazer (Ctrl+Z)" disabled>
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                            </svg>
+                            <span class="btn-text">Desfazer</span>
+                        </button>
+
+                        <!-- Refazer -->
+                        <button onclick="redo()" id="btn-redo" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2 py-1.5 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5" title="Refazer (Ctrl+Y)" disabled>
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path>
+                            </svg>
+                            <span class="btn-text">Refazer</span>
+                        </button>
+
+                        <!-- Divisor -->
+                        <div class="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1.5 toolbar-separator"></div>
+
+                        <!-- Rótulo de Exportar -->
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider toolbar-label font-bold mr-1">Exportar:</span>
+
+                        <!-- PNG Escuro -->
+                        <button onclick="exportToPNG('dark')" class="bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5" title="Exportar como PNG Escuro">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="btn-text">PNG Escuro</span>
+                        </button>
+
+                        <!-- PNG Claro -->
+                        <button onclick="exportToPNG('light')" class="bg-slate-100 hover:bg-slate-200 text-slate-950 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold shadow-sm border border-slate-200 dark:border-none flex items-center gap-1.5" title="Exportar como PNG Claro">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="btn-text">PNG Claro</span>
+                        </button>
+
+                        <!-- PNG Transparente -->
+                        <button onclick="exportToPNG('transparent')" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Exportar como PNG Transparente">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="btn-text">Transpar.</span>
+                        </button>
+
+                        <!-- LaTeX TikZ -->
+                        <button onclick="exportToTikZ()" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[11px] px-2.5 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5" title="Exportar grafo como código LaTeX TikZ">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span class="btn-text">LaTeX (TikZ)</span>
                         </button>
                     </div>
                 </div>
@@ -190,7 +360,7 @@
 
             <!-- Simulador e Validador de Strings -->
             <div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl shadow-sm dark:shadow-none transition-colors duration-200">
-                <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-3 code-font">3. Testador de Cadeias (Simulação)</h2>
+                <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-3 code-font">4. Testador de Cadeias (Simulação)</h2>
                 
                 <!-- Abas do Simulador -->
                 <div class="flex border-b border-slate-200 dark:border-slate-800/80 mb-4">
@@ -216,20 +386,35 @@
                         </div>
                     </div>
  
-                    <!-- Painel Passo a Passo Ocultável -->
-                    <div id="step-panel" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-900">
-                        <div class="flex items-center justify-between mb-3 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cadeia:</span>
-                                <div id="step-string-display" class="text-lg font-bold code-font tracking-widest text-slate-400 dark:text-slate-500"></div>
+                    <!-- Painel Passo a Passo Ocultável (Player de Simulação) -->
+                    <div id="step-panel" class="hidden mt-4 pt-4 border-t border-slate-150 dark:border-slate-800/80">
+                        <div class="flex flex-col gap-3 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <!-- Cabeçalho do Player: Exibição da Cadeia e Progresso -->
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">Processando:</span>
+                                    <div id="step-string-display" class="text-base font-extrabold code-font tracking-widest text-slate-700 dark:text-slate-300"></div>
+                                </div>
+                                <div id="step-status" class="text-xs font-bold font-mono text-cyan-600 dark:text-cyan-400"></div>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="nextStep()" id="next-step-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold py-1.5 px-3 rounded-lg transition">Próximo</button>
-                                <button onclick="stopSimulation()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-lg transition">Parar</button>
+                            
+                            <!-- Controles do Player -->
+                            <div class="flex items-center justify-center gap-2 pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
+                                <button onclick="prevStep()" id="prev-step-btn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1" title="Retroceder um passo">
+                                    ⏪ Voltar
+                                </button>
+                                <button onclick="togglePlayPause()" id="play-pause-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-extrabold py-1.5 px-4 rounded-xl transition flex items-center gap-1 shadow-sm shadow-cyan-500/10" title="Iniciar reprodução automática">
+                                    ▶ Play
+                                </button>
+                                <button onclick="nextStep()" id="next-step-btn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1" title="Avançar um passo">
+                                    ⏩ Avançar
+                                </button>
+                                <div class="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                                <button onclick="stopSimulation()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-455 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1" title="Interromper simulação">
+                                    ⏹ Parar
+                                </button>
                             </div>
                         </div>
-                        <!-- Estado de feedback do passo -->
-                        <div id="step-status" class="text-xs font-mono text-cyan-600 dark:text-cyan-400"></div>
                     </div>
  
                     <!-- Caixa de Feedback e Resultado -->
@@ -340,6 +525,32 @@
         </div>
     </div>
 
+    <!-- Modal de Exportação LaTeX (TikZ) -->
+    <div id="latex-export-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-2xl w-full relative shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-slate-850 dark:text-slate-100 code-font">Código LaTeX (TikZ) Gerado</h3>
+                <button onclick="closeLatexModal()" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 text-lg transition font-extrabold">&times;</button>
+            </div>
+            
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Copie o código abaixo e cole no seu documento LaTeX. Certifique-se de incluir a linha <code class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-mono text-cyan-600 dark:text-cyan-400">\usetikzlibrary{automata,positioning}</code> no preâmbulo.
+            </p>
+            
+            <textarea id="latex-code-textarea" readonly rows="12" 
+                      class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-xs outline-none text-slate-800 dark:text-slate-100 font-mono resize-none"></textarea>
+            
+            <div class="flex justify-end gap-2">
+                <button onclick="closeLatexModal()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2 px-5 rounded-xl transition text-xs">
+                    Fechar
+                </button>
+                <button onclick="copyLatexCode()" id="copy-latex-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2 px-5 rounded-xl transition text-xs shadow-md shadow-cyan-500/10">
+                    Copiar Código
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Rodapé -->
     <footer class="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950/80 p-4 text-center text-[11px] text-slate-400 dark:text-slate-500 transition-colors duration-200">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
@@ -394,12 +605,151 @@
             return document.documentElement.classList.contains('dark');
         }
 
+        // ----------------- CONTROLE DO MODO DA BARRA DE FERRAMENTAS -----------------
+        function initToolbarSize() {
+            const isCompact = localStorage.getItem('modelador_afd_compact_toolbar') === 'true';
+            const toolbar = document.getElementById('graph-toolbar-controls');
+            const toggleBtn = document.getElementById('btn-toggle-toolbar-size');
+            const toggleText = document.getElementById('compact-toggle-text');
+            
+            if (isCompact && toolbar && toggleBtn && toggleText) {
+                toolbar.classList.add('toolbar-compact');
+                toggleBtn.classList.add('bg-cyan-500/10', 'border-cyan-500/30', 'text-cyan-600', 'dark:text-cyan-400');
+                toggleText.textContent = "Modo Normal";
+            }
+        }
+
+        function toggleToolbarSize() {
+            const toolbar = document.getElementById('graph-toolbar-controls');
+            const toggleBtn = document.getElementById('btn-toggle-toolbar-size');
+            const toggleText = document.getElementById('compact-toggle-text');
+            if (!toolbar) return;
+            
+            const isCompact = toolbar.classList.toggle('toolbar-compact');
+            localStorage.setItem('modelador_afd_compact_toolbar', isCompact ? 'true' : 'false');
+            
+            if (toggleBtn && toggleText) {
+                if (isCompact) {
+                    toggleBtn.classList.add('bg-cyan-500/10', 'border-cyan-500/30', 'text-cyan-600', 'dark:text-cyan-400');
+                    toggleText.textContent = "Modo Normal";
+                } else {
+                    toggleBtn.classList.remove('bg-cyan-500/10', 'border-cyan-500/30', 'text-cyan-600', 'dark:text-cyan-400');
+                    toggleText.textContent = "Modo Compacto";
+                }
+            }
+        }
+
         // ----------------- ESTADO GLOBAL DO AUTÔMATO -----------------
         let alphabet = ['0', '1'];
         let states = []; 
         let initialStateId = "";
         let acceptingStateIds = [];
         let transitions = {}; // { 'stateId': { 'symbol': 'destId' } }
+        let selectedStateIds = [];
+        let dragStartPos = null;
+        let initialSelectedPositions = [];
+
+        // Histórico Desfazer/Refazer (Undo/Redo)
+        let historyStack = [];
+        let redoStack = [];
+
+        function saveHistory() {
+            const currentSnapshot = JSON.stringify({
+                alphabet: [...alphabet],
+                states: JSON.parse(JSON.stringify(states)),
+                initialStateId,
+                acceptingStateIds: [...acceptingStateIds],
+                transitions: JSON.parse(JSON.stringify(transitions)),
+                hasManualLayout: hasUserDragged,
+                selectedStateIds: [...selectedStateIds]
+            });
+            // Não adicionar snapshot redundante se for idêntico ao topo da pilha
+            if (historyStack.length > 0 && historyStack[historyStack.length - 1] === currentSnapshot) {
+                return;
+            }
+            historyStack.push(currentSnapshot);
+            if (historyStack.length > 50) {
+                historyStack.shift();
+            }
+            redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        function restoreFromSnapshot(snapshotStr) {
+            const snap = JSON.parse(snapshotStr);
+            alphabet = snap.alphabet;
+            states = snap.states;
+            initialStateId = snap.initialStateId;
+            acceptingStateIds = snap.acceptingStateIds;
+            transitions = snap.transitions;
+            hasUserDragged = snap.hasManualLayout || false;
+            selectedStateIds = snap.selectedStateIds || [];
+
+            document.getElementById('alphabet-input').value = alphabet.join(', ');
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        function undo() {
+            if (historyStack.length === 0) return;
+            const currentSnapshot = JSON.stringify({
+                alphabet: [...alphabet],
+                states: JSON.parse(JSON.stringify(states)),
+                initialStateId,
+                acceptingStateIds: [...acceptingStateIds],
+                transitions: JSON.parse(JSON.stringify(transitions))
+            });
+            redoStack.push(currentSnapshot);
+            const prev = historyStack.pop();
+            restoreFromSnapshot(prev);
+            updateUndoRedoButtons();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            const currentSnapshot = JSON.stringify({
+                alphabet: [...alphabet],
+                states: JSON.parse(JSON.stringify(states)),
+                initialStateId,
+                acceptingStateIds: [...acceptingStateIds],
+                transitions: JSON.parse(JSON.stringify(transitions))
+            });
+            historyStack.push(currentSnapshot);
+            const next = redoStack.pop();
+            restoreFromSnapshot(next);
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            const btnUndo = document.getElementById('btn-undo');
+            const btnRedo = document.getElementById('btn-redo');
+            if (btnUndo) btnUndo.disabled = (historyStack.length === 0);
+            if (btnRedo) btnRedo.disabled = (redoStack.length === 0);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            if (e.key === 'Escape') {
+                selectedStateIds = [];
+                redrawGraph();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+                if (e.key === 'z' || e.key === 'Z') {
+                    e.preventDefault();
+                    undo();
+                } else if (e.key === 'y' || e.key === 'Y') {
+                    e.preventDefault();
+                    redo();
+                }
+            } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                redo();
+            }
+        });
 
         // Variáveis de Rendering e Interação
         const canvas = document.getElementById('automaton-canvas');
@@ -443,10 +793,16 @@
         let stepState = null;
         let stepIndex = 0;
         let stepString = "";
+        let stepHistory = [];
+        let isPlaying = false;
+        let playIntervalTimer = null;
+
+        let hasUserDragged = false;
 
         // ----------------- INICIALIZAÇÃO DA PÁGINA -----------------
         window.addEventListener('load', () => {
             initTheme();
+            initToolbarSize();
             setupCanvasSize();
             if (!loadFromLocalStorage()) {
                 loadExample('ends1'); // Carrega padrão se não houver salvo
@@ -458,21 +814,40 @@
                     confirmPromptModal();
                 }
             });
-        });
 
-        window.addEventListener('resize', () => {
-            setupCanvasSize();
-            redrawGraph();
+            // Registrar o ResizeObserver para o container do canvas
+            const container = document.getElementById('canvas-container');
+            if (container) {
+                let resizeTimeout;
+                const resizeObserver = new ResizeObserver(() => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        const sizeChanged = setupCanvasSize();
+                        if (sizeChanged && !hasUserDragged && states.length > 0) {
+                            centerGraphCoordinates();
+                        }
+                        redrawGraph();
+                    }, 50);
+                });
+                resizeObserver.observe(container);
+            }
         });
 
         function setupCanvasSize() {
             const container = document.getElementById('canvas-container');
+            if (!container) return false;
             const dpr = window.devicePixelRatio || 1;
-            canvas.width = container.clientWidth * dpr;
-            canvas.height = container.clientHeight * dpr;
-            canvas.style.width = container.clientWidth + 'px';
-            canvas.style.height = container.clientHeight + 'px';
-            ctx.scale(dpr, dpr);
+            const targetWidth = Math.round(container.clientWidth * dpr);
+            const targetHeight = Math.round(container.clientHeight * dpr);
+            
+            // Apenas atualiza se o tamanho físico realmente mudou, evitando loops infinitos
+            if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                ctx.scale(dpr, dpr);
+                return true;
+            }
+            return false;
         }
 
         // Alertas Customizados (Sem usar alert() nativo em iframes)
@@ -489,7 +864,8 @@
                 states,
                 initialStateId,
                 acceptingStateIds,
-                transitions
+                transitions,
+                hasManualLayout: hasUserDragged
             };
             localStorage.setItem('modelador_afd_state', JSON.stringify(data));
         }
@@ -505,6 +881,7 @@
                     initialStateId = data.initialStateId || "";
                     acceptingStateIds = data.acceptingStateIds || [];
                     transitions = data.transitions || {};
+                    hasUserDragged = data.hasManualLayout || false;
                     
                     if (states.length > 0) {
                         buildStateTable();
@@ -524,7 +901,8 @@
                 states,
                 initialStateId,
                 acceptingStateIds,
-                transitions
+                transitions,
+                hasManualLayout: hasUserDragged
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -557,6 +935,7 @@
                     initialStateId = data.initialStateId || "";
                     acceptingStateIds = data.acceptingStateIds || [];
                     transitions = data.transitions;
+                    hasUserDragged = data.hasManualLayout || false;
 
                     buildStateTable();
                     redrawGraph();
@@ -676,6 +1055,7 @@
                 return false;
             }
 
+            saveHistory();
             stopSimulation();
 
             // 1. Atualizar o ID do estado na lista de estados
@@ -727,6 +1107,7 @@
                 return;
             }
 
+            saveHistory();
             alphabet = parsed;
 
             // Ajustar transições para se adequar ao novo alfabeto
@@ -745,6 +1126,7 @@
 
         // Cria e adiciona um novo nó ao array de estados (com correção de ID duplicado ou com ID customizado)
         function addNewState(x = null, y = null, customId = null) {
+            saveHistory();
             let id = customId;
             if (!id) {
                 let nextIndex = 0;
@@ -796,6 +1178,8 @@
                 return;
             }
 
+            saveHistory();
+            selectedStateIds = selectedStateIds.filter(selId => selId !== id);
             // Remover do vetor principal de estados
             states = states.filter(s => s.id !== id);
 
@@ -825,6 +1209,7 @@
         }
 
         function toggleAcceptance(id) {
+            saveHistory();
             const index = acceptingStateIds.indexOf(id);
             if (index > -1) {
                 acceptingStateIds.splice(index, 1);
@@ -837,12 +1222,14 @@
 
         // Define o estado inicial da computação ativa
         function setInitialState(id) {
+            saveHistory();
             initialStateId = id;
             redrawGraph();
             saveToLocalStorage();
         }
 
         function changeTransition(fromState, symbol, destState) {
+            saveHistory();
             if (transitions[fromState]) {
                 transitions[fromState][symbol] = destState;
                 redrawGraph();
@@ -851,6 +1238,7 @@
         }
 
         function clearAutomaton() {
+            saveHistory();
             states = [];
             acceptingStateIds = [];
             initialStateId = "";
@@ -964,6 +1352,334 @@
 
                 tbody.appendChild(tr);
             });
+            runDiagnostics();
+        }
+
+        // ----------------- VALIDADOR DE DIAGNÓSTICOS DE CONSISTÊNCIA -----------------
+        function runDiagnostics() {
+            const container = document.getElementById('validator-status');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const errors = [];
+            const warnings = [];
+
+            // 1. Verificar Estado Inicial
+            if (!initialStateId || !states.some(s => s.id === initialStateId)) {
+                errors.push("Nenhum estado inicial definido.");
+            }
+
+            // 2. Verificar Estados de Aceitação
+            const validAccepting = acceptingStateIds.filter(fId => states.some(s => s.id === fId));
+            if (validAccepting.length === 0) {
+                warnings.push("Nenhum estado final (de aceitação) definido.");
+            }
+
+            // 3. Transições incompletas e/ou inválidas
+            states.forEach(node => {
+                const trans = transitions[node.id] || {};
+                alphabet.forEach(sym => {
+                    const dest = trans[sym];
+                    if (!dest) {
+                        errors.push(`Estado <b>${node.id}</b> não possui transição para o símbolo '<b>${sym}</b>'.`);
+                    } else if (!states.some(s => s.id === dest)) {
+                        errors.push(`Estado <b>${node.id}</b> possui transição inválida para o estado '<b>${dest}</b>' ao ler '<b>${sym}</b>'.`);
+                    }
+                });
+            });
+
+            // 4. Conectividade / Estados Inalcançáveis
+            if (initialStateId && states.some(s => s.id === initialStateId)) {
+                const reachable = new Set();
+                const queue = [initialStateId];
+                reachable.add(initialStateId);
+
+                while (queue.length > 0) {
+                    const curr = queue.shift();
+                    const trans = transitions[curr] || {};
+                    alphabet.forEach(sym => {
+                        const dest = trans[sym];
+                        if (dest && states.some(s => s.id === dest)) {
+                            if (!reachable.has(dest)) {
+                                reachable.add(dest);
+                                queue.push(dest);
+                            }
+                        }
+                    });
+                }
+
+                const unreachable = states.filter(s => !reachable.has(s.id));
+                if (unreachable.length > 0) {
+                    const names = unreachable.map(s => `<b>${s.id}</b>`).join(", ");
+                    warnings.push(`Estado(s) inalcançável(is) a partir do inicial: ${names}.`);
+                }
+
+                // 5. Estados Sumidouros (Não alcançam estado de aceitação)
+                if (validAccepting.length > 0) {
+                    const canReachFinal = new Set();
+                    const finalQueue = [];
+                    validAccepting.forEach(fId => {
+                        canReachFinal.add(fId);
+                        finalQueue.push(fId);
+                    });
+
+                    while (finalQueue.length > 0) {
+                        const curr = finalQueue.shift();
+                        states.forEach(p => {
+                            if (!canReachFinal.has(p.id)) {
+                                const pTrans = transitions[p.id] || {};
+                                let hasTrans = false;
+                                for (let sym of alphabet) {
+                                    if (pTrans[sym] === curr) {
+                                        hasTrans = true;
+                                        break;
+                                    }
+                                }
+                                if (hasTrans) {
+                                    canReachFinal.add(p.id);
+                                    finalQueue.push(p.id);
+                                }
+                            }
+                        });
+                    }
+
+                    const deadEnds = states.filter(s => {
+                        if (canReachFinal.has(s.id)) return false;
+                        // Ignorar se for um estado de erro/lixeira padrão: todas as transições voltam para si mesmo
+                        const trans = transitions[s.id] || {};
+                        const isTrap = alphabet.every(sym => trans[sym] === s.id);
+                        return !isTrap;
+                    });
+                    if (deadEnds.length > 0) {
+                        const names = deadEnds.map(s => `<b>${s.id}</b>`).join(", ");
+                        warnings.push(`Estado(s) sumidouro (não alcança aceitação): ${names}.`);
+                    }
+                }
+            }
+
+            // Renderizar resultados
+            if (errors.length === 0 && warnings.length === 0) {
+                const item = document.createElement('div');
+                item.className = "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2.5 rounded-xl text-xs flex items-center gap-2 font-medium";
+                item.innerHTML = `
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Autômato Consistente e Completo! Pronto para simulação.</span>
+                `;
+                container.appendChild(item);
+            } else {
+                errors.forEach(err => {
+                    const item = document.createElement('div');
+                    item.className = "text-rose-600 dark:text-rose-455 bg-rose-500/10 border border-rose-500/20 px-3 py-2 rounded-xl text-xs flex items-start gap-2 font-medium";
+                    item.innerHTML = `
+                        <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span>${err}</span>
+                    `;
+                    container.appendChild(item);
+                });
+
+                warnings.forEach(warn => {
+                    const item = document.createElement('div');
+                    item.className = "text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl text-xs flex items-start gap-2 font-medium";
+                    item.innerHTML = `
+                        <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>${warn}</span>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+        }
+
+        // ----------------- ALGORITMO DE MINIMIZAÇÃO DE AFD -----------------
+        function minimizeAutomaton() {
+            if (states.length === 0) return;
+            
+            // Verificar estado inicial e erros de consistência
+            if (!initialStateId || !states.some(s => s.id === initialStateId)) {
+                showAlert("Erro de Validação", "Por favor, defina um estado inicial antes de realizar a minimização.");
+                return;
+            }
+
+            // Verificar se há transições incompletas
+            let hasIncomplete = false;
+            for (let node of states) {
+                const trans = transitions[node.id] || {};
+                for (let sym of alphabet) {
+                    if (!trans[sym] || !states.some(s => s.id === trans[sym])) {
+                        hasIncomplete = true;
+                        break;
+                    }
+                }
+                if (hasIncomplete) break;
+            }
+
+            if (hasIncomplete) {
+                showAlert("Transições Incompletas", "Por favor, certifique-se de que todas as transições para todos os símbolos do alfabeto estejam preenchidas antes de minimizar.");
+                return;
+            }
+
+            // Início do Algoritmo de Minimização
+            // 1. Filtrar inalcançáveis
+            const reachable = new Set();
+            const queue = [initialStateId];
+            reachable.add(initialStateId);
+
+            while (queue.length > 0) {
+                const curr = queue.shift();
+                const trans = transitions[curr] || {};
+                alphabet.forEach(sym => {
+                    const dest = trans[sym];
+                    if (dest && states.some(s => s.id === dest)) {
+                        if (!reachable.has(dest)) {
+                            reachable.add(dest);
+                            queue.push(dest);
+                        }
+                    }
+                });
+            }
+
+            const reachableStates = states.filter(s => reachable.has(s.id));
+            const initialCount = states.length;
+
+            // 2. Particionamento inicial (Finais vs Não-Finais)
+            let partition = [];
+            const finalGroup = reachableStates.filter(s => acceptingStateIds.includes(s.id)).map(s => s.id);
+            const nonFinalGroup = reachableStates.filter(s => !acceptingStateIds.includes(s.id)).map(s => s.id);
+            
+            if (finalGroup.length > 0) partition.push(finalGroup);
+            if (nonFinalGroup.length > 0) partition.push(nonFinalGroup);
+
+            if (partition.length === 0) return; // Vazio
+
+            // 3. Refinamento de partição
+            let changed = true;
+            while (changed) {
+                changed = false;
+                let nextPartition = [];
+                for (let group of partition) {
+                    if (group.length <= 1) {
+                        nextPartition.push(group);
+                        continue;
+                    }
+                    
+                    let subGroups = [];
+                    for (let stateId of group) {
+                        let placed = false;
+                        for (let sub of subGroups) {
+                            const rep = sub[0];
+                            let equivalent = true;
+                            for (let sym of alphabet) {
+                                const dest1 = transitions[stateId]?.[sym];
+                                const dest2 = transitions[rep]?.[sym];
+                                
+                                const gIdx1 = partition.findIndex(g => g.includes(dest1));
+                                const gIdx2 = partition.findIndex(g => g.includes(dest2));
+                                if (gIdx1 !== gIdx2) {
+                                    equivalent = false;
+                                    break;
+                                }
+                            }
+                            if (equivalent) {
+                                sub.push(stateId);
+                                placed = true;
+                                break;
+                            }
+                        }
+                        if (!placed) {
+                            subGroups.push([stateId]);
+                        }
+                    }
+                    nextPartition.push(...subGroups);
+                    if (subGroups.length > 1) {
+                        changed = true;
+                    }
+                }
+                partition = nextPartition;
+            }
+
+            // Se o número de classes é igual ao número de estados alcançáveis e já não havia inalcançáveis
+            if (partition.length === reachableStates.length && reachableStates.length === states.length) {
+                showAlert("Já Minimizado", "O autômato já está em sua forma mínima (todos os estados são distinguíveis e alcançáveis).");
+                return;
+            }
+
+            // Salvamos histórico ANTES de fazer a alteração
+            saveHistory();
+
+            // Realizar a substituição
+            const stateToNewId = {};
+            partition.forEach(group => {
+                group.sort();
+                const newId = group.join("");
+                group.forEach(oldId => {
+                    stateToNewId[oldId] = newId;
+                });
+            });
+
+            const newStates = [];
+            const newTransitions = {};
+            let newInitialStateId = "";
+            const newAcceptingStateIds = [];
+
+            partition.forEach(group => {
+                const newId = group.join("");
+                
+                // Média de posições
+                let sumX = 0, sumY = 0;
+                group.forEach(oldId => {
+                    const s = states.find(x => x.id === oldId);
+                    if (s) {
+                        sumX += s.x;
+                        sumY += s.y;
+                    }
+                });
+                const avgX = sumX / group.length;
+                const avgY = sumY / group.length;
+
+                newStates.push({
+                    id: newId,
+                    x: avgX,
+                    y: avgY
+                });
+
+                if (group.includes(initialStateId)) {
+                    newInitialStateId = newId;
+                }
+
+                const containsAccepting = group.some(oldId => acceptingStateIds.includes(oldId));
+                if (containsAccepting) {
+                    newAcceptingStateIds.push(newId);
+                }
+
+                newTransitions[newId] = {};
+                const rep = group[0];
+                alphabet.forEach(sym => {
+                    const oldDest = transitions[rep]?.[sym];
+                    if (oldDest) {
+                        newTransitions[newId][sym] = stateToNewId[oldDest];
+                    }
+                });
+            });
+
+            // Atualizar variáveis globais
+            states = newStates;
+            transitions = newTransitions;
+            initialStateId = newInitialStateId;
+            acceptingStateIds = newAcceptingStateIds;
+
+            // Recalcular posições
+            centerGraphCoordinates();
+
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+
+            showAlert("Minimização Concluída", `O autômato foi minimizado com sucesso de ${initialCount} para ${newStates.length} estados.`);
         }
 
         // ----------------- MOTOR DE DRAWING (CANVAS) -----------------
@@ -1164,6 +1880,19 @@
                     c.fill();
                 }
 
+                // Desenhar anel de seleção se estiver selecionado
+                const isSelected = selectedStateIds.includes(node.id);
+                if (isSelected) {
+                    c.save();
+                    c.beginPath();
+                    c.arc(node.x, node.y, nodeRadius + 5, 0, Math.PI * 2);
+                    c.strokeStyle = dark ? '#06b6d4' : '#0891b2';
+                    c.lineWidth = 2;
+                    c.setLineDash([4, 3]);
+                    c.stroke();
+                    c.restore();
+                }
+
                 // Círculo principal - Corrigido passando todos os 5 argumentos obrigatórios para o método 'arc'
                 c.beginPath();
                 c.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
@@ -1237,18 +1966,41 @@
             });
 
             if (clickedNode) {
+                saveHistory();
                 if (evt.shiftKey || canvasMode === 'transition') {
-                    // Modo criar transição
+                    // Modo criar transição (não altera seleção de mover)
                     isDrawingTransition = true;
                     transitionSourceNode = clickedNode;
                     transitionTempTargetPos = { x: pos.x, y: pos.y };
                 } else {
-                    // Mover nó normal
+                    // Modo mover: gerencia seleção múltipla com Ctrl/Cmd ou clique simples
+                    const isCtrl = evt.ctrlKey || evt.metaKey;
+                    if (isCtrl) {
+                        if (selectedStateIds.includes(clickedNode.id)) {
+                            selectedStateIds = selectedStateIds.filter(id => id !== clickedNode.id);
+                        } else {
+                            selectedStateIds.push(clickedNode.id);
+                        }
+                    } else {
+                        if (!selectedStateIds.includes(clickedNode.id)) {
+                            selectedStateIds = [clickedNode.id];
+                        }
+                    }
+                    
                     selectedNode = clickedNode;
                     isDragging = true;
+                    dragStartPos = { x: pos.x, y: pos.y };
+                    initialSelectedPositions = states
+                        .filter(s => selectedStateIds.includes(s.id))
+                        .map(s => ({ id: s.id, x: s.x, y: s.y }));
                 }
                 hideContextMenu();
+            } else {
+                // Clicou no vazio: limpa seleção
+                selectedStateIds = [];
+                hideContextMenu();
             }
+            redrawGraph();
         }
 
         function handleMouseMove(evt) {
@@ -1262,14 +2014,24 @@
 
             if (!isDragging || !selectedNode) return;
             
+            hasUserDragged = true;
+            
             const padX = 35;
             const padYTop = 55;
             const padYBottom = 35;
             const w = canvas.clientWidth;
             const h = canvas.clientHeight;
 
-            selectedNode.x = Math.max(padX, Math.min(w - padX, pos.x));
-            selectedNode.y = Math.max(padYTop, Math.min(h - padYBottom, pos.y));
+            const dx = pos.x - dragStartPos.x;
+            const dy = pos.y - dragStartPos.y;
+
+            initialSelectedPositions.forEach(initPos => {
+                const s = states.find(node => node.id === initPos.id);
+                if (s) {
+                    s.x = Math.max(padX, Math.min(w - padX, initPos.x + dx));
+                    s.y = Math.max(padYTop, Math.min(h - padYBottom, initPos.y + dy));
+                }
+            });
 
             redrawGraph();
         }
@@ -1375,18 +2137,27 @@
         function toggleDrawMode() {
             const btn = document.getElementById('btn-draw-mode');
             const indicator = document.getElementById('draw-mode-indicator');
-            const label = btn.querySelector('span:not(#draw-mode-indicator)');
+            const icon = document.getElementById('draw-mode-icon');
+            const label = btn.querySelector('.btn-text');
             
             if (canvasMode === 'drag') {
                 canvasMode = 'transition';
                 indicator.className = "w-2 h-2 rounded-full bg-cyan-500 animate-pulse";
-                btn.classList.add('border-cyan-500', 'text-cyan-505');
-                label.textContent = "Criar Transições";
+                btn.classList.add('border-cyan-500', 'text-cyan-500');
+                btn.title = "Criar Transições (ou use Shift+Arrastar)";
+                if (label) label.textContent = "Criar Transições";
+                if (icon) {
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>';
+                }
             } else {
                 canvasMode = 'drag';
                 indicator.className = "w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500";
-                btn.classList.remove('border-cyan-500', 'text-cyan-505');
-                label.textContent = "Mover Nós";
+                btn.classList.remove('border-cyan-500', 'text-cyan-500');
+                btn.title = "Mover Nós (ou use Shift+Arrastar)";
+                if (label) label.textContent = "Mover Nós";
+                if (icon) {
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>';
+                }
             }
         }
 
@@ -1441,19 +2212,38 @@
 
         // Auto-Organizar nós em círculo geométrico
         function autoLayoutCircle() {
-            if (states.length === 0) return;
-            
+            const targets = getNodesToLayout();
+            if (targets.length === 0) return;
+            saveHistory();
+
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            targets.forEach(s => {
+                if (s.x < minX) minX = s.x;
+                if (s.x > maxX) maxX = s.x;
+                if (s.y < minY) minY = s.y;
+                if (s.y > maxY) maxY = s.y;
+            });
+            const cx = minX === Infinity ? canvas.clientWidth / 2 : (minX + maxX) / 2;
+            const cy = minY === Infinity ? canvas.clientHeight / 2 : (minY + maxY) / 2;
+
             const w = canvas.clientWidth;
             const h = canvas.clientHeight;
-            const centerX = w / 2;
-            const centerY = h / 2;
-            const layoutRadius = Math.min(w, h) * 0.32;
+            const layoutRadius = targets.length <= 1 ? 0 : Math.min(w, h) * 0.28;
 
-            states.forEach((node, idx) => {
-                const theta = (2 * Math.PI * idx) / states.length - Math.PI / 2;
-                node.x = centerX + layoutRadius * Math.cos(theta);
-                node.y = centerY + layoutRadius * Math.sin(theta);
+            targets.sort((a, b) => a.id.localeCompare(b.id));
+
+            targets.forEach((node, idx) => {
+                const theta = (2 * Math.PI * idx) / targets.length - Math.PI / 2;
+                node.x = cx + layoutRadius * Math.cos(theta);
+                node.y = cy + layoutRadius * Math.sin(theta);
             });
+
+            if (targets.length === states.length) {
+                hasUserDragged = false;
+            } else {
+                hasUserDragged = true;
+            }
 
             redrawGraph();
             saveToLocalStorage();
@@ -1515,6 +2305,7 @@
         }
 
         function confirmTransitionConfig() {
+            saveHistory();
             if (!transitions[modalFromState]) {
                 transitions[modalFromState] = {};
             }
@@ -1591,14 +2382,18 @@
                 }
             }
 
+            // Parar qualquer play automático anterior
+            stopPlayTimer();
+
             stepString = input;
             stepIndex = 0;
             stepState = initialStateId;
+            stepHistory = [{ state: stepState, index: 0 }];
             
             document.getElementById('step-panel').classList.remove('hidden');
             document.getElementById('simulation-feedback').classList.add('hidden');
-            document.getElementById('next-step-btn').disabled = false;
-
+            
+            updatePlayerButtons();
             updateStepDisplay();
         }
 
@@ -1623,8 +2418,67 @@
             redrawGraph({ current: stepState });
         }
 
+        function updatePlayerButtons() {
+            const prevBtn = document.getElementById('prev-step-btn');
+            const nextBtn = document.getElementById('next-step-btn');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+
+            if (prevBtn) prevBtn.disabled = (stepHistory.length <= 1);
+            if (playPauseBtn) {
+                if (isPlaying) {
+                    playPauseBtn.innerHTML = "⏸ Pausar";
+                    playPauseBtn.className = "bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold py-1.5 px-4 rounded-xl transition flex items-center gap-1 shadow-sm shadow-amber-500/10";
+                } else {
+                    playPauseBtn.innerHTML = "▶ Play";
+                    playPauseBtn.className = "bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-extrabold py-1.5 px-4 rounded-xl transition flex items-center gap-1 shadow-sm shadow-cyan-500/10";
+                }
+            }
+        }
+
+        function stopPlayTimer() {
+            isPlaying = false;
+            if (playIntervalTimer) {
+                clearInterval(playIntervalTimer);
+                playIntervalTimer = null;
+            }
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                stopPlayTimer();
+                updatePlayerButtons();
+            } else {
+                isPlaying = true;
+                updatePlayerButtons();
+                // Avança imediatamente
+                nextStep();
+                playIntervalTimer = setInterval(() => {
+                    if (document.getElementById('step-panel').classList.contains('hidden')) {
+                        stopPlayTimer();
+                        return;
+                    }
+                    nextStep();
+                }, 1200);
+            }
+        }
+
+        function prevStep() {
+            if (stepHistory.length <= 1) return;
+            
+            stopPlayTimer();
+            stepHistory.pop(); // Remove o estado atual
+            
+            const prev = stepHistory[stepHistory.length - 1];
+            stepState = prev.state;
+            stepIndex = prev.index;
+
+            updateStepDisplay();
+            updatePlayerButtons();
+        }
+
         function nextStep() {
             if (stepIndex >= stepString.length) {
+                stopPlayTimer();
                 const isAccepted = acceptingStateIds.includes(stepState);
                 const feedback = document.getElementById('simulation-feedback');
                 
@@ -1646,6 +2500,17 @@
             const symbol = stepString[stepIndex];
             const next = transitions[stepState]?.[symbol];
 
+            if (!next) {
+                stopPlayTimer();
+                const feedback = document.getElementById('simulation-feedback');
+                feedback.classList.remove('hidden');
+                document.getElementById('step-panel').classList.add('hidden');
+                feedback.className = "mt-4 p-4 rounded-xl text-center font-bold text-sm bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/20";
+                feedback.innerHTML = `✗ Simulação abortada: Não há transição definida de <b>${stepState}</b> com o símbolo '${symbol}'.`;
+                redrawGraph();
+                return;
+            }
+
             redrawGraph({ 
                 current: next,
                 from: stepState,
@@ -1654,13 +2519,16 @@
 
             stepState = next;
             stepIndex++;
+            stepHistory.push({ state: stepState, index: stepIndex });
 
             setTimeout(() => {
                 updateStepDisplay();
+                updatePlayerButtons();
             }, 300);
         }
 
         function stopSimulation() {
+            stopPlayTimer();
             document.getElementById('step-panel').classList.add('hidden');
             redrawGraph();
         }
@@ -1810,6 +2678,7 @@
         };
 
         function loadExample(key) {
+            saveHistory();
             stopSimulation();
             const ex = examples[key];
             if (!ex) return;
@@ -1845,27 +2714,152 @@
             const graphCX = minX + graphW / 2;
             const graphCY = minY + graphH / 2;
 
-            const container = document.getElementById('canvas-container');
-            const canvasCX = container && container.clientWidth > 100 ? container.clientWidth / 2 : 250;
-            const canvasCY = container && container.clientHeight > 100 ? container.clientHeight / 2 : 150;
+            // Usa as dimensões de layout reais do canvas (que são idênticas às do container)
+            const w = canvas.clientWidth > 100 ? canvas.clientWidth : 500;
+            const h = canvas.clientHeight > 100 ? canvas.clientHeight : 300;
+            const canvasCX = w / 2;
+            const canvasCY = h / 2;
 
-            const dx = canvasCX - graphCX;
-            const dy = canvasCY - graphCY;
+            let dx = canvasCX - graphCX;
+            let dy = canvasCY - graphCY;
 
             // Fatores de margem de segurança contra corte nas bordas
             const padX = 35;
             const padYTop = 55;
             const padYBottom = 35;
-            const w = container && container.clientWidth > 100 ? container.clientWidth : 500;
-            const h = container && container.clientHeight > 100 ? container.clientHeight : 300;
 
+            // Limita o deslocamento de forma que os nós não saiam completamente das margens se couberem.
+            // Se o grafo inteiro for maior que a tela (menos as margens), centraliza simetricamente.
+            if (graphW <= w - 2 * padX) {
+                const minDx = padX - minX;
+                const maxDx = w - padX - maxX;
+                dx = Math.max(minDx, Math.min(maxDx, dx));
+            }
+            if (graphH <= h - padYTop - padYBottom) {
+                const minDy = padYTop - minY;
+                const maxDy = h - padYBottom - maxY;
+                dy = Math.max(minDy, Math.min(maxDy, dy));
+            }
+
+            // Aplica a translação de forma rígida a todos os nós (sem clamping individual nos nós)
             states.forEach(s => {
                 s.x += dx;
                 s.y += dy;
-                // Clampa nos limites da tela por segurança
-                s.x = Math.max(padX, Math.min(w - padX, s.x));
-                s.y = Math.max(padYTop, Math.min(h - padYBottom, s.y));
             });
+        }
+
+        function manualCenterGraph() {
+            if (states.length === 0) return;
+            saveHistory();
+            hasUserDragged = false; // Permite que o sistema volte a ajudar no auto-alinhamento dinâmico
+            centerGraphCoordinates();
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // Funções auxiliares para layout/organização
+        function getNodesToLayout() {
+            if (selectedStateIds.length > 0) {
+                return states.filter(s => selectedStateIds.includes(s.id));
+            }
+            return states;
+        }
+
+        function alignHorizontal() {
+            const targets = getNodesToLayout();
+            if (targets.length <= 1) return;
+            saveHistory();
+            const avgY = targets.reduce((sum, s) => sum + s.y, 0) / targets.length;
+            targets.forEach(s => { s.y = avgY; });
+            hasUserDragged = true;
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        function alignVertical() {
+            const targets = getNodesToLayout();
+            if (targets.length <= 1) return;
+            saveHistory();
+            const avgX = targets.reduce((sum, s) => sum + s.x, 0) / targets.length;
+            targets.forEach(s => { s.x = avgX; });
+            hasUserDragged = true;
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // Distribuir horizontalmente mantendo o menor X e maior X originais
+        function distributeHorizontal() {
+            const targets = getNodesToLayout();
+            if (targets.length <= 2) return;
+            saveHistory();
+            targets.sort((a, b) => a.x - b.x);
+            const minX = targets[0].x;
+            const maxX = targets[targets.length - 1].x;
+            const step = (maxX - minX) / (targets.length - 1);
+            targets.forEach((s, idx) => {
+                s.x = minX + idx * step;
+            });
+            hasUserDragged = true;
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        // Distribuir verticalmente mantendo o menor Y e maior Y originais
+        function distributeVertical() {
+            const targets = getNodesToLayout();
+            if (targets.length <= 2) return;
+            saveHistory();
+            targets.sort((a, b) => a.y - b.y);
+            const minY = targets[0].y;
+            const maxY = targets[targets.length - 1].y;
+            const step = (maxY - minY) / (targets.length - 1);
+            targets.forEach((s, idx) => {
+                s.y = minY + idx * step;
+            });
+            hasUserDragged = true;
+            redrawGraph();
+            saveToLocalStorage();
+        }
+
+        function layoutGrid() {
+            const targets = getNodesToLayout();
+            if (targets.length === 0) return;
+            saveHistory();
+
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            targets.forEach(s => {
+                if (s.x < minX) minX = s.x;
+                if (s.x > maxX) maxX = s.x;
+                if (s.y < minY) minY = s.y;
+                if (s.y > maxY) maxY = s.y;
+            });
+            const cx = minX === Infinity ? canvas.clientWidth / 2 : (minX + maxX) / 2;
+            const cy = minY === Infinity ? canvas.clientHeight / 2 : (minY + maxY) / 2;
+
+            const cols = Math.ceil(Math.sqrt(targets.length));
+            const rows = Math.ceil(targets.length / cols);
+            const spacingX = 140;
+            const spacingY = 120;
+
+            targets.sort((a, b) => {
+                if (Math.abs(a.y - b.y) < 30) return a.x - b.x;
+                return a.y - b.y;
+            });
+
+            const startX = cx - ((cols - 1) * spacingX) / 2;
+            const startY = cy - ((rows - 1) * spacingY) / 2;
+
+            targets.forEach((s, idx) => {
+                const c = idx % cols;
+                const r = Math.floor(idx / cols);
+                s.x = startX + c * spacingX;
+                s.y = startY + r * spacingY;
+            });
+
+            hasUserDragged = true;
+            redrawGraph();
+            saveToLocalStorage();
         }
 
         // ----------------- EXPORTAÇÃO PARA PNG (ALTA RESOLUÇÃO) -----------------
@@ -2037,6 +3031,120 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        // ----------------- EXPORTAÇÃO PARA LATEX (TIKZ) -----------------
+        function exportToTikZ() {
+            if (states.length === 0) return;
+
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            states.forEach(s => {
+                if (s.x < minX) minX = s.x;
+                if (s.x > maxX) maxX = s.x;
+                if (s.y < minY) minY = s.y;
+                if (s.y > maxY) maxY = s.y;
+            });
+
+            const scale = 100.0;
+
+            let tikz = "";
+            tikz += "% Preâmbulo sugerido:\n";
+            tikz += "% \\usepackage{tikz}\n";
+            tikz += "% \\usetikzlibrary{automata, positioning, arrows.meta}\n\n";
+            tikz += "\\begin{tikzpicture}[shorten >=1pt, node distance=2cm, on grid, auto, >=stealth, \n";
+            tikz += "    every state/.style={draw=slate-800, fill=white, minimum size=1cm},\n";
+            tikz += "    initial text={}]\n\n";
+
+            tikz += "  % Estados\n";
+            states.forEach(node => {
+                const isInitial = (node.id === initialStateId);
+                const isFinal = acceptingStateIds.includes(node.id);
+                
+                let opts = "state";
+                if (isInitial) opts += ", initial";
+                if (isFinal) opts += ", accepting";
+                
+                const tx = ((node.x - minX) / scale).toFixed(2);
+                const ty = (-(node.y - minY) / scale).toFixed(2);
+
+                tikz += `  \\node[${opts}] (${node.id}) at (${tx}, ${ty}) {${node.id}};\n`;
+            });
+            tikz += "\n";
+
+            tikz += "  % Transições\n";
+            
+            const edgeGroups = {};
+            states.forEach(node => {
+                const trans = transitions[node.id] || {};
+                alphabet.forEach(sym => {
+                    const dest = trans[sym];
+                    if (dest) {
+                        const key = `${node.id}->${dest}`;
+                        if (!edgeGroups[key]) {
+                            edgeGroups[key] = [];
+                        }
+                        edgeGroups[key].push(sym);
+                    }
+                });
+            });
+
+            const keys = Object.keys(edgeGroups);
+            if (keys.length > 0) {
+                tikz += "  \\path[->] \n";
+                keys.forEach((key, idx) => {
+                    const [from, to] = key.split("->");
+                    const symbols = edgeGroups[key].join(", ");
+                    
+                    let edgeOpts = "";
+                    if (from === to) {
+                        edgeOpts = "loop above";
+                    } else {
+                        const reverseKey = `${to}->${from}`;
+                        if (edgeGroups[reverseKey]) {
+                            edgeOpts = "bend left";
+                        } else {
+                            edgeOpts = "bend left=10";
+                        }
+                    }
+
+                    const endChar = (idx === keys.length - 1) ? ";" : "";
+                    tikz += `    (${from}) edge[${edgeOpts}] node {${symbols}} (${to})${endChar}\n`;
+                });
+            }
+
+            tikz += "\\end{tikzpicture}";
+
+            document.getElementById('latex-code-textarea').value = tikz;
+            
+            const btn = document.getElementById('copy-latex-btn');
+            if (btn) {
+                btn.innerHTML = "Copiar Código";
+                btn.className = "bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2 px-5 rounded-xl transition text-xs shadow-md shadow-cyan-500/10";
+            }
+            
+            document.getElementById('latex-export-modal').classList.remove('hidden');
+        }
+
+        function closeLatexModal() {
+            document.getElementById('latex-export-modal').classList.add('hidden');
+        }
+
+        function copyLatexCode() {
+            const textarea = document.getElementById('latex-code-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            
+            const btn = document.getElementById('copy-latex-btn');
+            if (btn) {
+                btn.innerHTML = "✓ Copiado!";
+                btn.className = "bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 px-5 rounded-xl transition text-xs shadow-md shadow-emerald-500/10";
+                
+                setTimeout(() => {
+                    btn.innerHTML = "Copiar Código";
+                    btn.className = "bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2 px-5 rounded-xl transition text-xs shadow-md shadow-cyan-500/10";
+                }, 2000);
+            }
         }
     </script>
 </body>
