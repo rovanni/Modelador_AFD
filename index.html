@@ -115,7 +115,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-900">
                         <h2 class="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider code-font">2. Tabela de Transição (δ)</h2>
-                        <button onclick="addNewState()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
+                        <button onclick="handleAddStateClick()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
                             + Estado
                         </button>
                     </div>
@@ -205,9 +205,9 @@
                 <!-- Aba 1: Simulação Individual -->
                 <div id="sim-single-panel">
                     <div class="flex flex-col md:flex-row gap-3">
-                        <input type="text" id="simulation-input" class="bg-slate-100 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm outline-none text-slate-800 dark:text-slate-100 flex-grow code-font font-bold tracking-widest" placeholder="Ex: 11010">
+                        <input type="text" id="simulation-input" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm outline-none text-slate-800 dark:text-slate-100 flex-grow code-font font-bold tracking-widest" placeholder="Ex: 11010">
                         <div class="flex gap-2">
-                            <button onclick="runFastSimulation()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-955 font-extrabold text-xs px-5 py-3 rounded-xl transition uppercase tracking-wider shadow-md shadow-cyan-500/20">
+                            <button onclick="runFastSimulation()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs px-5 py-3 rounded-xl transition uppercase tracking-wider shadow-md shadow-cyan-500/20">
                                 Análise Rápida
                             </button>
                             <button onclick="startStepByStep()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-4 py-3 rounded-xl transition uppercase font-bold tracking-wider">
@@ -215,32 +215,32 @@
                             </button>
                         </div>
                     </div>
-
+ 
                     <!-- Painel Passo a Passo Ocultável -->
                     <div id="step-panel" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-900">
-                        <div class="flex items-center justify-between mb-3 bg-slate-50 dark:bg-slate-955/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-3 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                             <div class="flex items-center gap-3">
                                 <span class="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cadeia:</span>
                                 <div id="step-string-display" class="text-lg font-bold code-font tracking-widest text-slate-400 dark:text-slate-500"></div>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="nextStep()" id="next-step-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-955 text-xs font-bold py-1.5 px-3 rounded-lg transition">Próximo</button>
+                                <button onclick="nextStep()" id="next-step-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold py-1.5 px-3 rounded-lg transition">Próximo</button>
                                 <button onclick="stopSimulation()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-lg transition">Parar</button>
                             </div>
                         </div>
                         <!-- Estado de feedback do passo -->
                         <div id="step-status" class="text-xs font-mono text-cyan-600 dark:text-cyan-400"></div>
                     </div>
-
+ 
                     <!-- Caixa de Feedback e Resultado -->
                     <div id="simulation-feedback" class="hidden mt-4 p-4 rounded-xl text-center font-bold text-sm"></div>
                 </div>
-
+ 
                 <!-- Aba 2: Teste em Lote -->
                 <div id="sim-batch-panel" class="hidden">
                     <div class="flex flex-col gap-3">
-                        <textarea id="batch-input" rows="4" class="bg-slate-100 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm outline-none text-slate-800 dark:text-slate-100 code-font font-semibold" placeholder="Insira uma cadeia por linha&#10;Ex:&#10;11010&#10;0011&#10;111"></textarea>
-                        <button onclick="runBatchSimulation()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-955 font-extrabold text-xs px-5 py-3 rounded-xl transition uppercase tracking-wider shadow-md shadow-cyan-500/20 self-start">
+                        <textarea id="batch-input" rows="4" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm outline-none text-slate-800 dark:text-slate-100 code-font font-semibold" placeholder="Insira uma cadeia por linha&#10;Ex:&#10;11010&#10;0011&#10;111"></textarea>
+                        <button onclick="runBatchSimulation()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs px-5 py-3 rounded-xl transition uppercase tracking-wider shadow-md shadow-cyan-500/20 self-start">
                             Validar Cadeias em Lote
                         </button>
                     </div>
@@ -281,6 +281,27 @@
         </div>
     </div>
 
+    <!-- Modal de Prompt Customizado (para Renomear ou Adicionar com nome customizado) -->
+    <div id="prompt-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-2xl">
+            <h3 id="prompt-modal-title" class="text-base font-bold text-slate-800 dark:text-slate-100 mb-2 code-font">Renomear Estado</h3>
+            <p id="prompt-modal-desc" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
+            
+            <input type="text" id="prompt-modal-input" 
+                   class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-2.5 text-sm outline-none text-slate-800 dark:text-slate-100 font-bold mb-6 code-font" 
+                   placeholder="Ex: q0">
+            
+            <div class="flex gap-2">
+                <button onclick="closePromptModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 rounded-xl transition text-xs">
+                    Cancelar
+                </button>
+                <button id="prompt-modal-confirm-btn" onclick="confirmPromptModal()" class="w-1/2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-xl transition text-xs shadow-md shadow-cyan-500/10">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Menu de Contexto Customizado para o Canvas -->
     <div id="canvas-context-menu" class="hidden fixed bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 min-w-[160px] text-xs">
         <button onclick="contextSetInitial()" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-750 dark:text-slate-200 flex items-center gap-2">
@@ -289,8 +310,11 @@
         <button onclick="contextToggleAcceptance()" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-750 dark:text-slate-200 flex items-center gap-2">
             ✔ Alternar Aceitação
         </button>
+        <button onclick="contextRenameState()" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-750 dark:text-slate-200 flex items-center gap-2">
+            ✏ Renomear Estado
+        </button>
         <div class="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-        <button onclick="contextDeleteState()" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-450 flex items-center gap-2 font-medium">
+        <button onclick="contextDeleteState()" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-455 flex items-center gap-2 font-medium">
             ❌ Excluir Estado
         </button>
     </div>
@@ -384,6 +408,16 @@
         let isDragging = false;
         let mousePos = { x: 0, y: 0 };
         const nodeRadius = 26;
+        function getNodeFontSize(c, text, baseSize = 14, maxRadius = 26) {
+            let fontSize = baseSize;
+            c.font = `bold ${fontSize}px 'Fira Code', monospace`;
+            const maxAllowedWidth = maxRadius * 2 - 10;
+            while (fontSize > 6 && c.measureText(text).width > maxAllowedWidth) {
+                fontSize -= 0.5;
+                c.font = `bold ${fontSize}px 'Fira Code', monospace`;
+            }
+            return fontSize;
+        }
 
         // Variáveis de Transição Visual (Shift + Arrastar ou Modo Desenho)
         let canvasMode = 'drag'; // 'drag' ou 'transition'
@@ -400,6 +434,10 @@
         let modalToState = "";
         let modalSelectedSymbols = [];
 
+        // Variáveis do Modal de Prompt Customizado
+        let promptAction = null; // 'rename' ou 'add'
+        let promptTargetId = null; // para identificar o estado que está sendo renomeado
+
         // Variáveis do Simulador Passo a Passo
         let stepInterval = null;
         let stepState = null;
@@ -413,6 +451,13 @@
             if (!loadFromLocalStorage()) {
                 loadExample('ends1'); // Carrega padrão se não houver salvo
             }
+            
+            // Ouvir tecla Enter no input do modal de prompt
+            document.getElementById('prompt-modal-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    confirmPromptModal();
+                }
+            });
         });
 
         window.addEventListener('resize', () => {
@@ -529,6 +574,148 @@
             document.getElementById('custom-alert').classList.add('hidden');
         }
 
+        // ----------------- MODAL DE PROMPT CUSTOMIZADO E RENOMEAÇÃO -----------------
+        function openPromptModal(title, desc, defaultValue, action, targetId = null) {
+            document.getElementById('prompt-modal-title').textContent = title;
+            document.getElementById('prompt-modal-desc').innerHTML = desc;
+            
+            const input = document.getElementById('prompt-modal-input');
+            input.value = defaultValue;
+            
+            promptAction = action;
+            promptTargetId = targetId;
+            
+            document.getElementById('prompt-modal').classList.remove('hidden');
+            
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 50);
+        }
+
+        function closePromptModal() {
+            document.getElementById('prompt-modal').classList.add('hidden');
+            promptAction = null;
+            promptTargetId = null;
+        }
+
+        function confirmPromptModal() {
+            const inputVal = document.getElementById('prompt-modal-input').value.trim();
+            
+            if (promptAction === 'rename') {
+                const success = renameState(promptTargetId, inputVal);
+                if (success) {
+                    closePromptModal();
+                }
+            } else if (promptAction === 'add') {
+                if (!inputVal) {
+                    showAlert("Erro ao adicionar", "O nome do estado não pode ser vazio.");
+                    return;
+                }
+                const regex = /^[a-zA-Z0-9_-]+$/;
+                if (!regex.test(inputVal)) {
+                    showAlert("Erro ao adicionar", "O nome do estado deve conter apenas letras, números, underlines (_) e hifens (-).");
+                    return;
+                }
+                if (states.some(s => s.id === inputVal)) {
+                    showAlert("Erro ao adicionar", `Já existe um estado chamado "${inputVal}".`);
+                    return;
+                }
+                
+                stopSimulation();
+                addNewState(null, null, inputVal);
+                closePromptModal();
+            }
+        }
+
+        function handleAddStateClick() {
+            stopSimulation();
+            let nextIndex = 0;
+            while (states.some(s => s.id === `q${nextIndex}`)) {
+                nextIndex++;
+            }
+            const defaultId = `q${nextIndex}`;
+            
+            openPromptModal(
+                "Adicionar Estado",
+                "Digite o nome do novo estado:",
+                defaultId,
+                'add'
+            );
+        }
+
+        function contextRenameState() {
+            if (contextNode) {
+                stopSimulation();
+                openPromptModal(
+                    "Renomear Estado",
+                    `Digite o novo nome para o estado <strong class="text-cyan-600 dark:text-cyan-400 font-mono">${contextNode.id}</strong>:`,
+                    contextNode.id,
+                    'rename',
+                    contextNode.id
+                );
+            }
+            hideContextMenu();
+        }
+
+        function renameState(oldId, newId) {
+            newId = newId.trim();
+            if (!newId) {
+                showAlert("Erro ao renomear", "O nome do estado não pode ser vazio.");
+                return false;
+            }
+
+            const regex = /^[a-zA-Z0-9_-]+$/;
+            if (!regex.test(newId)) {
+                showAlert("Erro ao renomear", "O nome do estado deve conter apenas letras, números, underlines (_) e hifens (-).");
+                return false;
+            }
+
+            if (oldId !== newId && states.some(s => s.id === newId)) {
+                showAlert("Erro ao renomear", `Já existe um estado chamado "${newId}".`);
+                return false;
+            }
+
+            stopSimulation();
+
+            // 1. Atualizar o ID do estado na lista de estados
+            const stateObj = states.find(s => s.id === oldId);
+            if (stateObj) {
+                stateObj.id = newId;
+            }
+
+            // 2. Atualizar o initialStateId se necessário
+            if (initialStateId === oldId) {
+                initialStateId = newId;
+            }
+
+            // 3. Atualizar o acceptingStateIds se necessário
+            const idx = acceptingStateIds.indexOf(oldId);
+            if (idx !== -1) {
+                acceptingStateIds[idx] = newId;
+            }
+
+            // 4. Atualizar transições
+            if (transitions[oldId]) {
+                transitions[newId] = transitions[oldId];
+                delete transitions[oldId];
+            }
+
+            Object.keys(transitions).forEach(fromId => {
+                Object.keys(transitions[fromId]).forEach(sym => {
+                    if (transitions[fromId][sym] === oldId) {
+                        transitions[fromId][sym] = newId;
+                    }
+                });
+            });
+
+            // 5. Atualizar interface, canvas e salvar
+            buildStateTable();
+            redrawGraph();
+            saveToLocalStorage();
+            return true;
+        }
+
         function updateAlphabet() {
             const val = document.getElementById('alphabet-input').value;
             const parsed = val.split(',')
@@ -556,13 +743,16 @@
             saveToLocalStorage();
         }
 
-        // Cria e adiciona um novo nó ao array de estados (com correção de ID duplicado)
-        function addNewState(x = null, y = null) {
-            let nextIndex = 0;
-            while (states.some(s => s.id === `q${nextIndex}`)) {
-                nextIndex++;
+        // Cria e adiciona um novo nó ao array de estados (com correção de ID duplicado ou com ID customizado)
+        function addNewState(x = null, y = null, customId = null) {
+            let id = customId;
+            if (!id) {
+                let nextIndex = 0;
+                while (states.some(s => s.id === `q${nextIndex}`)) {
+                    nextIndex++;
+                }
+                id = `q${nextIndex}`;
             }
-            const id = `q${nextIndex}`;
             
             const container = document.getElementById('canvas-container');
             const padX = 35;
@@ -679,10 +869,37 @@
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-100 dark:border-slate-900/40 hover:bg-slate-100/50 dark:hover:bg-slate-900/20 transition duration-150";
 
-                // Nome do nó
+                // Nome do nó com botão de renomear
                 const tdName = document.createElement('td');
                 tdName.className = "py-3 text-slate-800 dark:text-slate-200 code-font font-bold";
-                tdName.textContent = node.id;
+                
+                const nameContainer = document.createElement('div');
+                nameContainer.className = "flex items-center gap-1.5";
+                
+                const spanName = document.createElement('span');
+                spanName.textContent = node.id;
+                nameContainer.appendChild(spanName);
+                
+                const renameBtn = document.createElement('button');
+                renameBtn.className = "text-slate-400 hover:text-cyan-500 transition-colors p-0.5";
+                renameBtn.title = "Renomear estado";
+                renameBtn.onclick = () => {
+                    stopSimulation();
+                    openPromptModal(
+                        "Renomear Estado",
+                        `Digite o novo nome para o estado <strong class="text-cyan-600 dark:text-cyan-400 font-mono">${node.id}</strong>:`,
+                        node.id,
+                        'rename',
+                        node.id
+                    );
+                };
+                renameBtn.innerHTML = `
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                `;
+                nameContainer.appendChild(renameBtn);
+                tdName.appendChild(nameContainer);
                 tr.appendChild(tdName);
 
                 // Checkbox Inicial
@@ -691,7 +908,7 @@
                 tdInit.innerHTML = `
                     <input type="radio" name="initial-node" ${initialStateId === node.id ? 'checked' : ''} 
                            onchange="setInitialState('${node.id}')"
-                           class="w-4 h-4 rounded-full text-cyan-500 focus:ring-cyan-500 bg-slate-100 dark:bg-slate-955 border-slate-300 dark:border-slate-800 cursor-pointer">
+                           class="w-4 h-4 rounded-full text-cyan-500 focus:ring-cyan-500 bg-slate-100 dark:bg-slate-950 border-slate-300 dark:border-slate-800 cursor-pointer">
                 `;
                 tr.appendChild(tdInit);
 
@@ -701,7 +918,7 @@
                 tdFinal.innerHTML = `
                     <input type="checkbox" ${acceptingStateIds.includes(node.id) ? 'checked' : ''} 
                            onchange="toggleAcceptance('${node.id}')"
-                           class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-955 border-slate-300 dark:border-slate-800 cursor-pointer">
+                           class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-950 border-slate-300 dark:border-slate-800 cursor-pointer">
                 `;
                 tr.appendChild(tdFinal);
 
@@ -718,7 +935,7 @@
                     row.innerHTML = `<span>Ao ler <strong class="text-cyan-600 dark:text-cyan-400 font-mono">${sym}</strong> vai para:</span>`;
                     
                     const select = document.createElement('select');
-                    select.className = "bg-slate-100 dark:bg-slate-955 border border-slate-300 dark:border-slate-800 rounded-md text-slate-800 dark:text-slate-300 text-[10px] py-1 px-2 focus:border-cyan-500 outline-none code-font cursor-pointer";
+                    select.className = "bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-md text-slate-800 dark:text-slate-300 text-[10px] py-1 px-2 focus:border-cyan-500 outline-none code-font cursor-pointer";
                     select.onchange = (e) => changeTransition(node.id, sym, e.target.value);
                     
                     states.forEach(s => {
@@ -818,7 +1035,7 @@
 
             // Cores do tema adaptativo com alto contraste (WCAG AA/AAA)
             const lineStroke = isActive ? (dark ? '#22d3ee' : '#0891b2') : '#64748b';
-            const textFill = isActive ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#cbd5e1' : '#334155');
+            const textFill = isActive ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#f8fafc' : '#334155');
 
             c.strokeStyle = lineStroke;
             c.lineWidth = isActive ? 3 : 1.5;
@@ -836,7 +1053,7 @@
             drawArrowHead(c, arrowX, arrowY, Math.PI * 0.62);
 
             // Escrever o texto do símbolo
-            c.font = "bold 12px 'Fira Code', monospace";
+            c.font = "bold 13px 'Fira Code', monospace";
             c.textAlign = 'center';
             c.fillText(label, x, y - 32);
         }
@@ -856,7 +1073,7 @@
 
             // Cores com alto contraste (WCAG AA/AAA)
             const lineStroke = isActive ? (dark ? '#22d3ee' : '#0891b2') : '#64748b';
-            const textFill = isActive ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#cbd5e1' : '#334155');
+            const textFill = isActive ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#f8fafc' : '#334155');
 
             c.strokeStyle = lineStroke;
             c.lineWidth = isActive ? 3 : 1.5;
@@ -884,7 +1101,7 @@
                 drawArrowHead(c, targetX, targetY, angle);
 
                 // Texto do rótulo
-                c.font = "bold 12px 'Fira Code', monospace";
+                c.font = "bold 13px 'Fira Code', monospace";
                 c.textAlign = 'center';
                 c.fillText(label, midX + px * 4, midY + py * 4 + 4);
             } else {
@@ -905,7 +1122,7 @@
                 // Texto do rótulo ligeiramente deslocado
                 const textX = (startX + endX) / 2 - px * 10;
                 const textY = (startY + endY) / 2 - py * 10 + 4;
-                c.font = "bold 12px 'Fira Code', monospace";
+                c.font = "bold 13px 'Fira Code', monospace";
                 c.textAlign = 'center';
                 c.fillText(label, textX, textY);
             }
@@ -950,7 +1167,7 @@
                 // Círculo principal - Corrigido passando todos os 5 argumentos obrigatórios para o método 'arc'
                 c.beginPath();
                 c.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
-                c.fillStyle = dark ? '#0f172a' : '#ffffff';
+                c.fillStyle = dark ? '#1e293b' : '#ffffff';
                 c.fill();
                 c.strokeStyle = strokeStyle;
                 c.lineWidth = isCurrent ? 3 : (isInitial ? 2.5 : 1.5);
@@ -983,10 +1200,11 @@
                 }
 
                 // Rótulo do estado (com alto contraste WCAG)
-                c.fillStyle = isCurrent ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#f1f5f9' : '#0f172a');
-                c.font = "bold 13px 'Fira Code', monospace";
+                c.fillStyle = isCurrent ? (dark ? '#22d3ee' : '#0e7490') : (dark ? '#ffffff' : '#0f172a');
+                const fontSize = getNodeFontSize(c, node.id, 14, nodeRadius);
+                c.font = `bold ${fontSize}px 'Fira Code', monospace`;
                 c.textAlign = 'center';
-                c.fillText(node.id, node.x, node.y + 4);
+                c.fillText(node.id, node.x, node.y + (fontSize / 3));
             });
         }
 
@@ -1276,7 +1494,7 @@
             const isActive = modalSelectedSymbols.includes(sym);
             const base = "px-4 py-2.5 rounded-xl font-bold font-mono text-sm transition ";
             if (isActive) {
-                return base + "bg-cyan-500 text-slate-955 shadow-md shadow-cyan-500/20 border border-transparent";
+                return base + "bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20 border border-transparent";
             } else {
                 return base + "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/50";
             }
@@ -1714,7 +1932,7 @@
                         const arrowY = y - 10 + 15 * Math.sin(arrowAngle);
                         drawArrowHead(tempCtx, arrowX, arrowY, Math.PI * 0.62);
 
-                        tempCtx.font = "bold 12px 'Fira Code', monospace";
+                        tempCtx.font = "bold 13px 'Fira Code', monospace";
                         tempCtx.textAlign = 'center';
                         tempCtx.fillText(label, x, y - 32);
                     } else {
@@ -1744,7 +1962,7 @@
                             const angle = Math.atan2(targetY - midY, targetX - midX);
                             drawArrowHead(tempCtx, targetX, targetY, angle);
 
-                            tempCtx.font = "bold 12px 'Fira Code', monospace";
+                            tempCtx.font = "bold 13px 'Fira Code', monospace";
                             tempCtx.textAlign = 'center';
                             tempCtx.fillText(label, midX + px * 4, midY + py * 4 + 4);
                         } else {
@@ -1763,7 +1981,7 @@
 
                             const textX = (startX + endX) / 2 - px * 10;
                             const textY = (startY + endY) / 2 - py * 10 + 4;
-                            tempCtx.font = "bold 12px 'Fira Code', monospace";
+                            tempCtx.font = "bold 13px 'Fira Code', monospace";
                             tempCtx.textAlign = 'center';
                             tempCtx.fillText(label, textX, textY);
                         }
@@ -1779,7 +1997,7 @@
 
                 tempCtx.beginPath();
                 tempCtx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
-                tempCtx.fillStyle = theme === 'light' ? '#ffffff' : '#0f172a';
+                tempCtx.fillStyle = theme === 'light' ? '#ffffff' : '#1e293b';
                 tempCtx.fill();
                 tempCtx.strokeStyle = borderC;
                 tempCtx.lineWidth = isInitial ? 2.5 : 1.5;
@@ -1807,9 +2025,10 @@
                 }
 
                 tempCtx.fillStyle = stateLabelColor;
-                tempCtx.font = "bold 13px 'Fira Code', monospace";
+                const fontSize = getNodeFontSize(tempCtx, node.id, 14, nodeRadius);
+                tempCtx.font = `bold ${fontSize}px 'Fira Code', monospace`;
                 tempCtx.textAlign = 'center';
-                tempCtx.fillText(node.id, node.x, node.y + 4);
+                tempCtx.fillText(node.id, node.x, node.y + (fontSize / 3));
             });
 
             const link = document.createElement('a');
