@@ -76,7 +76,6 @@ test('salvar e restaurar o trabalho', () => {
 app.loadExample('even0');
 app.exportToTikZ();
 const tex = el('latex-code-textarea').value;
-console.log('--- amostra TikZ:', JSON.stringify(tex.slice(0, 700)));
 test('TikZ: sem cor inválida (slate-800)', () => !tex.includes('slate-'));
 test('TikZ: nomes de estado em modo matemático', () => tex.includes('$\\mathit{qPar}$') && !/[(]q[A-Za-z]+[)] at .*[{]\$q[A-Za-z]+\$[}]/.test(tex));
 test('TikZ: laços usam loop above', () => tex.includes('loop above'));
