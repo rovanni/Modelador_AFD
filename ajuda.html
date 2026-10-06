@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Didático & Tutorial — Autômatos Finitos Determinísticos (AFD)</title>
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/tailwind.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .title-font { font-family: 'Outfit', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200">
+
+    <header class="border-b border-slate-200 dark:border-slate-900 bg-white/80 dark:bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 p-4 transition-colors duration-200">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="bg-cyan-500/10 hover:bg-cyan-500/20 p-2.5 rounded-xl border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 transition" title="Voltar ao Modelador">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <div>
+                    <h1 class="text-lg font-extrabold title-font tracking-wide text-cyan-600 dark:text-cyan-400">Guia Didático & Manual do AFD</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Teoria da Computação — Autômatos Finitos Determinísticos na Prática (Prof. Luciano Rovanni)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="index.html" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-md flex items-center gap-1.5"><span>Abrir Simulador</span><span>→</span></a>
+                <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-200/60 dark:bg-slate-900 hover:bg-slate-300/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-slate-800 transition" title="Alternar tema">🌓</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col gap-8 my-2 leading-relaxed">
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">🧠</span><h2 class="text-xl font-bold title-font">1. O que é um AFD?</h2></div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Um <strong>Autômato Finito Determinístico</strong> é o modelo mais simples de computação: uma máquina com um <strong>número finito de estados</strong> que lê a entrada <em>um símbolo por vez, da esquerda para a direita</em>, e muda de estado a cada símbolo. Não existe memória além do próprio estado.</p>
+            <div class="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl text-xs text-cyan-800 dark:text-cyan-300 mb-4"><strong>Determinístico</strong> significa que, em cada estado e para cada símbolo, existe <em>exatamente uma</em> regra: não há escolhas, nem transições vazias (ε). É por isso que a tabela do simulador sempre mostra, para cada estado, um destino para cada símbolo do alfabeto.</div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Os AFDs reconhecem exatamente as <strong>linguagens regulares</strong>. Eles conseguem testar se uma cadeia termina em 1 ou tem número par de 0s, mas não conseguem contar sem limite (por exemplo, aⁿbⁿ). Para isso, veremos o autômato com pilha.</p>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">📐</span><h2 class="text-xl font-bold title-font">2. A Definição Formal (a 5-tupla)</h2></div>
+            <div class="p-3.5 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-mono font-bold text-sm text-cyan-600 dark:text-cyan-400 mb-5">M = (Q, Σ, δ, q₀, F)</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4"><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">Q</strong> — conjunto finito de estados (ex.: {q0, q1}).</div><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">Σ</strong> — alfabeto de entrada: os símbolos permitidos nas cadeias (ex.: {0, 1}).</div><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">δ</strong> — função de transição <em>total</em>: δ : Q × Σ → Q. No simulador, é a tabela do painel 2.</div><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">q₀</strong> — estado inicial (marcado na coluna <em>Inicial</em> e com a seta de entrada no grafo).</div><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">F</strong> — estados finais, ou de aceitação (coluna <em>Final</em>; círculo duplo no grafo).</div></div>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">⚙️</span><h2 class="text-xl font-bold title-font">3. Como o AFD lê uma cadeia</h2></div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Partindo de q₀, para cada símbolo <span class="font-mono">a</span> da entrada o autômato vai para <span class="font-mono">δ(estado atual, a)</span>. Ao consumir toda a cadeia:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4"><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Aceita</span><span>o estado em que a leitura terminou pertence a F.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Rejeita</span><span>a leitura terminou fora de F.</span></div></div>
+            <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-800 dark:text-amber-300 mb-4"><strong>Dica:</strong> a palavra vazia é aceita apenas se o próprio q₀ for final. Teste isso na <em>Análise Rápida</em> deixando o campo vazio.</div>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">🖱️</span><h2 class="text-xl font-bold title-font">4. Guia Rápido de Interação</h2></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4"><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Duplo clique no vazio:</span><span>cria um estado.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Duplo clique no estado:</span><span>alterna entre final e não final.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Arrastar um estado:</span><span>move o estado.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Shift + arrastar:</span><span>liga um estado a outro (ou use o modo de criar transições).</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Botão direito no estado:</span><span>menu com opções do estado.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Tabela de transição:</span><span>cada linha mostra os destinos; troque o destino pelo seletor.</span></div></div>
+            <h3 class="text-sm font-bold title-font mb-2">Organizando o diagrama</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4"><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Alinhar / Distribuir:</span><span>alinha ou distribui os estados na horizontal ou vertical.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Círculo / Grade:</span><span>organizam todos os estados automaticamente.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Centralizar Vista:</span><span>enquadra o autômato na tela.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Desfazer / Refazer:</span><span>voltam e refazem as edições (Ctrl+Z / Ctrl+Y).</span></div></div>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">▶️</span><h2 class="text-xl font-bold title-font">5. Simulando cadeias</h2></div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">No painel <strong>Testador de Cadeias</strong> você tem três maneiras de testar:</p>
+            <ul class="text-sm text-slate-600 dark:text-slate-300 list-disc pl-5 space-y-2 mb-2"><li><strong>Análise Rápida:</strong> mostra direto se a cadeia é aceita ou rejeitada.</li><li><strong>Passo a Passo:</strong> use ⏮ (início), ⏪ (voltar), ▶ Play, ⏩ (avançar) e ⏭ (até o fim, mostrando o resultado). A linha do estado atual e o símbolo que será lido ficam <strong>destacados na tabela de transição</strong>, e o estado atual brilha no grafo.</li><li><strong>Testar Lote:</strong> cole várias cadeias (uma por linha) e veja todos os resultados de uma vez.</li></ul>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">✅</span><h2 class="text-xl font-bold title-font">6. Validação e minimização</h2></div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">O painel <strong>Validador de Consistência</strong> avisa se falta estado inicial, se não há estado final, se existem estados inalcançáveis ou transições incompletas. O botão <strong>Minimizar</strong> aplica o algoritmo de minimização e <strong>substitui</strong> o autômato pelo AFD equivalente com o menor número de estados (use Exportar antes se quiser guardar o original).</p>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">📚</span><h2 class="text-xl font-bold title-font">7. Exemplos prontos</h2></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4"><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">Termina em 1</strong> — aceita as cadeias binárias cujo último símbolo é 1.</div><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">Paridade de 0s</strong> — aceita as cadeias com número par de 0s.</div><div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800"><strong class="font-mono text-cyan-500">Começa com 1</strong> — aceita as cadeias binárias cujo primeiro símbolo é 1.</div></div>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">💾</span><h2 class="text-xl font-bold title-font">8. Salvar e exportar</h2></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4"><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Salvamento automático:</span><span>ao reabrir a página, o último autômato volta como você deixou. Os Exemplos recomeçam do zero.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">Exportar / Importar:</span><span>salva e carrega o autômato em arquivo JSON.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">PNG Escuro / Claro / Transp.:</span><span>imagem do grafo para slides e relatórios.</span></div><div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800"><span class="font-bold text-cyan-500 font-mono">LaTeX (TikZ):</span><span>gera o código TikZ; o botão "Baixar .tex completo" cria um documento pronto para compilar.</span></div></div>
+        </section>
+
+        <section class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm">
+            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">🎓</span><h2 class="text-xl font-bold title-font">9. Sugestões de atividades</h2></div>
+            <ol class="text-sm text-slate-600 dark:text-slate-300 list-decimal pl-5 space-y-2 mb-2"><li>Construa um AFD que aceite cadeias binárias com número ímpar de 1s.</li><li>Monte um AFD para "contém a subcadeia 01" e teste em lote cadeias aceitas e rejeitadas.</li><li>Use o Passo a Passo para simular <span class="font-mono">1101</span> no exemplo "Termina em 1" e anote a sequência de estados.</li><li>Crie um AFD com estados redundantes e use o botão Minimizar para ver quantos estados sobram (exporte antes para comparar).</li><li>Exporte o diagrama em PNG claro e em LaTeX e inclua no seu relatório.</li></ol>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-slate-200 dark:border-slate-900 bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-4 text-center text-xs text-slate-400">
+        <p>Modelador de AFD Interativo • Disciplina de <strong>Teoria da Computação</strong> • Prof. Luciano Rovanni</p>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (e) {}
+        }
+        try {
+            if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+        } catch (e) {}
+    </script>
+</body>
+</html>

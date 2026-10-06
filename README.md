@@ -1,5 +1,7 @@
 # 💻 Modelador de AFD Interativo
 
+**🌐 Online:** https://rovanni.github.io/Modelador_AFD/
+
 > Um editor e simulador visual moderno, interativo e de alta fidelidade para **Autômatos Finitos Determinísticos (AFD)**.
 
 Este projeto foi desenvolvido com foco em acessibilidade pedagógica, riqueza estética e robustez técnica para auxiliar estudantes e professores nas disciplinas de **Teoria da Computação**, **Linguagens Formais e Autômatos** e **Compiladores**. 
@@ -82,6 +84,46 @@ Não há processos de build ou instalação necessários.
         Em seguida, acesse `http://localhost:8000/Modelador_AFD_Interativo.html`.
 
 ---
+
+## 🗂️ Estrutura do Projeto
+
+| Arquivo | Conteúdo |
+|---|---|
+| `index.html` | Estrutura da página (HTML) |
+| `ajuda.html` | Guia didático |
+| `css/style.css` | Estilos complementares |
+| `css/tailwind.css` | Utilitários do Tailwind já compilados (gerado, não editar à mão) |
+| `css/fonts.css`, `fonts/` | Fontes locais (Fira Code, Inter, Outfit) |
+| `js/canvas.js` | Desenho do grafo, arrastar/soltar, menu de contexto e modal de transição |
+| `js/examples.js` | Exemplos clássicos |
+| `js/export.js` | Exportação PNG e LaTeX (TikZ) |
+| `js/main.js` | Inicialização da página |
+| `js/model.js` | Tema, barra de ferramentas, estado global do AFD e persistência (localStorage/JSON) |
+| `js/panels.js` | Modais de texto, tabela de estados, validador e minimização |
+| `js/simulation.js` | Motor de simulação (passo a passo) e testes em lote |
+| `tools/` | Configuração para regerar `css/tailwind.css` |
+| `tests/` | Testes de lógica (`run_tests.js`) e de interface (`ui_checks.js`) |
+
+A ordem dos `<script>` em `index.html` importa: ela segue a ordem da tabela acima.
+
+## 🔌 Uso Offline
+
+O simulador **não precisa de internet**: Tailwind e fontes são arquivos locais. Se você adicionar classes novas do Tailwind em `index.html` ou `js/*.js`, regere o CSS (precisa de Node):
+
+```bash
+cd tools
+npx tailwindcss@3.4.17 -c tailwind.config.js -i tailwind-input.css -o ../css/tailwind.css --minify
+```
+
+## 🧪 Testes
+
+- **Lógica** (sem navegador): `node tests/run_tests.js`
+- **Interface**: abra `index.html`, abra o console (F12), cole o conteúdo de `tests/ui_checks.js` e tecle Enter. O script simula arrastar, Shift+arrastar, duplo clique, menu de contexto, layouts, simulação, salvamento e exportações, e imprime PASS/FAIL.
+
+## 📤 Exportações
+
+- **PNG** sempre com fundo branco (bom para slides e artigos), qualquer que seja o tema da tela.
+- **LaTeX/TikZ** com rótulos em modo matemático e laços com `loop above`; o botão "Baixar .tex completo" gera um documento pronto para compilar (classe `standalone`).
 
 ## 📄 Licença
 
